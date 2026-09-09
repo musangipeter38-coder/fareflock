@@ -165,7 +165,12 @@ def delete_post(post_id):
     return redirect(url_for('admin_dashboard'))
 
 
+# ---------- DATABASE SETUP ----------
+# Runs every time the app starts, whether via "python app.py" locally
+# or via gunicorn on Render — this guarantees tables always exist.
+with app.app_context():
+    db.create_all()
+
+
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
     app.run(debug=True)
