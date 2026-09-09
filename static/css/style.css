@@ -228,3 +228,10 @@ button, .btn-primary {
     text-decoration: none;
 }
 .admin-dot:hover { background: var(--electric-blue); }
+.widget-card {
+    background: #FFFFFF;
+    border-radius: 16px;
+    padding: 16px;
+    overflow: hidden;
+    box-shadow: 0 0 0 1px var(--border-glow);
+}

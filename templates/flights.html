@@ -9,7 +9,9 @@
 {% if widgets %}
     {% for widget in widgets %}
     <section class="widget-section">
-        {{ widget.content | safe }}
+        <div class="widget-card">
+            {{ widget.content | safe }}
+        </div>
     </section>
     {% endfor %}
 {% else %}
