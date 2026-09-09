@@ -244,7 +244,10 @@ def delete_link(link_id):
 
 
 # ---------- DATABASE SETUP ----------
+# TEMPORARY: dropping affiliate_link table once to rebuild it with the new columns.
+# This line gets removed after the next successful deploy.
 with app.app_context():
+    AffiliateLink.__table__.drop(db.engine, checkfirst=True)
     db.create_all()
 
 if __name__ == '__main__':
