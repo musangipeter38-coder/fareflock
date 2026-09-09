@@ -5,6 +5,7 @@ from flask import Flask, render_template, redirect, url_for, request, flash, abo
 from flask_login import LoginManager, login_user, logout_user, login_required
 from flask_bcrypt import Bcrypt
 from dotenv import load_dotenv
+from sqlalchemy import text
 from database import db, Admin, Post, Category, AffiliateLink, ClickLog
 
 load_dotenv()
@@ -27,10 +28,10 @@ def load_user(user_id):
     return Admin.query.get(int(user_id))
 
 
-def slugify(text):
-    text = text.lower().strip()
-    text = re.sub(r'[^a-z0-9]+', '-', text)
-    return text.strip('-')
+def slugify(text_in):
+    text_in = text_in.lower().strip()
+    text_in = re.sub(r'[^a-z0-9]+', '-', text_in)
+    return text_in.strip('-')
 
 
 def get_widget(placement):
@@ -244,10 +245,12 @@ def delete_link(link_id):
 
 
 # ---------- DATABASE SETUP ----------
-# TEMPORARY: dropping affiliate_link table once to rebuild it with the new columns.
-# This line gets removed after the next successful deploy.
+# TEMPORARY: cascading drop of affiliate_link + click_log to rebuild with new schema.
+# This block gets removed after the next successful deploy.
 with app.app_context():
-    AffiliateLink.__table__.drop(db.engine, checkfirst=True)
+    db.session.execute(text('DROP TABLE IF EXISTS click_log CASCADE'))
+    db.session.execute(text('DROP TABLE IF EXISTS affiliate_link CASCADE'))
+    db.session.commit()
     db.create_all()
 
 if __name__ == '__main__':
