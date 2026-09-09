@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit Link' if link else 'New Link' }} — Fareflock{% endblock %}
+{% block content %}
+<section class="post-form">
+    <h1>{{ 'Edit Link/Widget' if link else 'New Link/Widget' }}</h1>
+    <form method="POST">
+        <label>Name</label>
+        <input type="text" name="name" value="{{ link.name if link else '' }}" required>
+
+        <label>Type</label>
+        <select name="link_type" required>
+            <option value="widget" {% if link and link.link_type == 'widget' %}selected{% endif %}>Widget (embed script — auto-placed on a page)</option>
+            <option value="url" {% if link and link.link_type == 'url' %}selected{% endif %}>URL (plain affiliate link — use inside blog posts)</option>
+        </select>
+
+        <label>Placement (widgets only — where it shows automatically)</label>
+        <select name="placement">
+            <option value="">— Not applicable (for URL type) —</option>
+            <option value="homepage" {% if link and link.placement == 'homepage' %}selected{% endif %}>Homepage</option>
+            <option value="flights_page" {% if link and link.placement == 'flights_page' %}selected{% endif %}>Flights Page</option>
+            <option value="hotels_page" {% if link and link.placement == 'hotels_page' %}selected{% endif %}>Hotels Page</option>
+        </select>
+
+        <label>Content (widget embed code, OR the real affiliate URL if type is "URL")</label>
+        <textarea name="content" rows="8" required>{{ link.content if link else '' }}</textarea>
+
+        <label>Description (your own notes)</label>
+        <input type="text" name="description" value="{{ link.description if link else '' }}">
+
+        <label class="checkbox-label">
+            <input type="checkbox" name="active" {% if link and link.active %}checked{% elif not link %}checked{% endif %}>
+            Active
+        </label>
+
+        <button type="submit" class="btn-primary">Save</button>
+    </form>
+
+    {% if link and link.link_type == 'url' %}
+    <p style="margin-top:20px; color:#64748B; font-size:14px;">
+        To use this in a blog post, link to: <code>/out/{{ link.id }}</code><br>
+        Example: <code>&lt;a href="/out/{{ link.id }}"&gt;Book this hotel here →&lt;/a&gt;</code>
+    </p>
+    {% endif %}
+</section>
+{% endblock %}

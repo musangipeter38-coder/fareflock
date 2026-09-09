@@ -1,11 +1,11 @@
 import os
 import re
 from datetime import datetime
-from flask import Flask, render_template, redirect, url_for, request, flash
+from flask import Flask, render_template, redirect, url_for, request, flash, abort
 from flask_login import LoginManager, login_user, logout_user, login_required
 from flask_bcrypt import Bcrypt
 from dotenv import load_dotenv
-from database import db, Admin, Post, Category
+from database import db, Admin, Post, Category, AffiliateLink, ClickLog
 
 load_dotenv()
 
@@ -33,22 +33,29 @@ def slugify(text):
     return text.strip('-')
 
 
+def get_widget(placement):
+    return AffiliateLink.query.filter_by(placement=placement, link_type='widget', active=True).first()
+
+
 # ---------- PUBLIC ROUTES ----------
 
 @app.route('/')
 def home():
     latest_posts = Post.query.filter_by(published=True).order_by(Post.created_at.desc()).limit(3).all()
-    return render_template('index.html', posts=latest_posts)
+    widget = get_widget('homepage')
+    return render_template('index.html', posts=latest_posts, widget=widget)
 
 
 @app.route('/flights')
 def flights():
-    return render_template('flights.html')
+    widget = get_widget('flights_page')
+    return render_template('flights.html', widget=widget)
 
 
 @app.route('/hotels')
 def hotels():
-    return render_template('hotels.html')
+    widget = get_widget('hotels_page')
+    return render_template('hotels.html', widget=widget)
 
 
 @app.route('/blog')
@@ -73,6 +80,22 @@ def post_detail(slug):
 @app.route('/about')
 def about():
     return render_template('about.html')
+
+
+# ---------- CLICK TRACKING ----------
+
+@app.route('/out/<int:link_id>')
+def out(link_id):
+    link = AffiliateLink.query.get_or_404(link_id)
+    if link.link_type != 'url':
+        abort(404)
+
+    post_slug = request.args.get('post')
+    click = ClickLog(affiliate_link_id=link.id, post_slug=post_slug)
+    db.session.add(click)
+    db.session.commit()
+
+    return redirect(link.content)
 
 
 # ---------- ADMIN AUTH ----------
@@ -122,12 +145,9 @@ def new_post():
             slug = f"{slug}-{int(datetime.utcnow().timestamp())}"
 
         post = Post(
-            title=title,
-            slug=slug,
-            body=body,
+            title=title, slug=slug, body=body,
             meta_description=meta_description,
-            category_id=category_id,
-            published=published
+            category_id=category_id, published=published
         )
         db.session.add(post)
         db.session.commit()
@@ -165,12 +185,67 @@ def delete_post(post_id):
     return redirect(url_for('admin_dashboard'))
 
 
+# ---------- ADMIN: AFFILIATE LINKS ----------
+
+@app.route('/admin/links')
+@login_required
+def admin_links():
+    links = AffiliateLink.query.order_by(AffiliateLink.created_at.desc()).all()
+    click_counts = {}
+    for link in links:
+        click_counts[link.id] = ClickLog.query.filter_by(affiliate_link_id=link.id).count()
+    return render_template('admin/links.html', links=links, click_counts=click_counts)
+
+
+@app.route('/admin/links/new', methods=['GET', 'POST'])
+@login_required
+def new_link():
+    if request.method == 'POST':
+        link = AffiliateLink(
+            name=request.form.get('name'),
+            link_type=request.form.get('link_type'),
+            placement=request.form.get('placement') or None,
+            content=request.form.get('content'),
+            description=request.form.get('description'),
+            active=True if request.form.get('active') == 'on' else False
+        )
+        db.session.add(link)
+        db.session.commit()
+        flash('Affiliate link/widget created.')
+        return redirect(url_for('admin_links'))
+    return render_template('admin/link_form.html', link=None)
+
+
+@app.route('/admin/links/edit/<int:link_id>', methods=['GET', 'POST'])
+@login_required
+def edit_link(link_id):
+    link = AffiliateLink.query.get_or_404(link_id)
+    if request.method == 'POST':
+        link.name = request.form.get('name')
+        link.link_type = request.form.get('link_type')
+        link.placement = request.form.get('placement') or None
+        link.content = request.form.get('content')
+        link.description = request.form.get('description')
+        link.active = True if request.form.get('active') == 'on' else False
+        db.session.commit()
+        flash('Updated.')
+        return redirect(url_for('admin_links'))
+    return render_template('admin/link_form.html', link=link)
+
+
+@app.route('/admin/links/delete/<int:link_id>')
+@login_required
+def delete_link(link_id):
+    link = AffiliateLink.query.get_or_404(link_id)
+    db.session.delete(link)
+    db.session.commit()
+    flash('Deleted.')
+    return redirect(url_for('admin_links'))
+
+
 # ---------- DATABASE SETUP ----------
-# Runs every time the app starts, whether via "python app.py" locally
-# or via gunicorn on Render — this guarantees tables always exist.
 with app.app_context():
     db.create_all()
-
 
 if __name__ == '__main__':
     app.run(debug=True)

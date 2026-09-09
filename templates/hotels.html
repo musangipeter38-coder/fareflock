@@ -7,13 +7,17 @@
 </section>
 
 <section class="widget-section">
-    <div class="widget-placeholder">
-        <p>Hotel search widget coming soon — pending Travelpayouts approval.</p>
-    </div>
+    {% if widget %}
+        {{ widget.content | safe }}
+    {% else %}
+        <div class="widget-placeholder">
+            <p>Hotel search widget coming soon.</p>
+        </div>
+    {% endif %}
 </section>
 
 <section class="content-block">
     <h2>How to Pick a Hotel That's Actually Worth It</h2>
-    <p>Guides on budget vs comfort stays for East African travelers coming soon.</p>
+    <p>Guides on budget vs comfort stays coming soon.</p>
 </section>
 {% endblock %}

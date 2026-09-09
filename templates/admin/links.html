@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Affiliate Links — Fareflock{% endblock %}
+{% block content %}
+<section class="admin-dashboard">
+    <div class="admin-header">
+        <h1>Affiliate Links & Widgets</h1>
+        <a href="{{ url_for('new_link') }}" class="btn-primary">+ New Link/Widget</a>
+        <a href="{{ url_for('admin_dashboard') }}" class="btn-secondary">Back to Posts</a>
+    </div>
+
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Placement</th>
+                <th>Active</th>
+                <th>Clicks</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for link in links %}
+            <tr>
+                <td>{{ link.name }}</td>
+                <td>{{ link.link_type }}</td>
+                <td>{{ link.placement or '—' }}</td>
+                <td>{{ 'Yes' if link.active else 'No' }}</td>
+                <td>
+                    {{ click_counts[link.id] }}
+                    {% if link.link_type == 'url' %}
+                        <br><small>/out/{{ link.id }}</small>
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{{ url_for('edit_link', link_id=link.id) }}">Edit</a> |
+                    <a href="{{ url_for('delete_link', link_id=link.id) }}" onclick="return confirm('Delete this link?')">Delete</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endblock %}

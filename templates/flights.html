@@ -7,13 +7,17 @@
 </section>
 
 <section class="widget-section">
-    <div class="widget-placeholder">
-        <p>Flight search widget coming soon — pending Travelpayouts approval.</p>
-    </div>
+    {% if widget %}
+        {{ widget.content | safe }}
+    {% else %}
+        <div class="widget-placeholder">
+            <p>Flight search widget coming soon.</p>
+        </div>
+    {% endif %}
 </section>
 
 <section class="content-block">
-    <h2>Tips for Booking Flights from Kenya</h2>
-    <p>Check back soon for route-specific advice on flying from Nairobi, Eldoret, and Mombasa to top destinations.</p>
+    <h2>Tips for Booking Flights</h2>
+    <p>Route-specific guides and honest deal reviews coming soon.</p>
 </section>
 {% endblock %}

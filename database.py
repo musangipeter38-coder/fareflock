@@ -4,7 +4,6 @@ from datetime import datetime
 
 db = SQLAlchemy()
 
-# Association table for many-to-many Post <-> Tag
 post_tags = db.Table(
     'post_tags',
     db.Column('post_id', db.Integer, db.ForeignKey('post.id'), primary_key=True),
@@ -36,7 +35,7 @@ class Post(db.Model):
     title = db.Column(db.String(200), nullable=False)
     slug = db.Column(db.String(200), unique=True, nullable=False)
     body = db.Column(db.Text, nullable=False)
-    featured_image = db.Column(db.String(300))  # Cloudinary URL, added Phase 2
+    featured_image = db.Column(db.String(300))
     meta_description = db.Column(db.String(300))
     category_id = db.Column(db.Integer, db.ForeignKey('category.id'))
     tags = db.relationship('Tag', secondary=post_tags, backref='posts')
@@ -47,7 +46,18 @@ class Post(db.Model):
 
 class AffiliateLink(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)   # e.g. "Flight Search Widget"
-    link_type = db.Column(db.String(50))                # "widget" or "url"
-    content = db.Column(db.Text, nullable=False)         # widget embed code OR plain URL
+    name = db.Column(db.String(100), nullable=False)
+    link_type = db.Column(db.String(20), nullable=False)     # 'widget' or 'url'
+    placement = db.Column(db.String(50))                      # 'homepage', 'flights_page', 'hotels_page', 'blog_inline'
+    content = db.Column(db.Text, nullable=False)               # widget embed code OR plain affiliate URL
     description = db.Column(db.String(300))
+    active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class ClickLog(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    affiliate_link_id = db.Column(db.Integer, db.ForeignKey('affiliate_link.id'), nullable=False)
+    post_slug = db.Column(db.String(200))
+    clicked_at = db.Column(db.DateTime, default=datetime.utcnow)
+    affiliate_link = db.relationship('AffiliateLink', backref='clicks')
