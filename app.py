@@ -5,7 +5,7 @@ from flask import Flask, render_template, redirect, url_for, request, flash, abo
 from flask_login import LoginManager, login_user, logout_user, login_required
 from flask_bcrypt import Bcrypt
 from dotenv import load_dotenv
-from database import db, Admin, Post, Category, AffiliateLink, ClickLog
+from database import db, Admin, Post, Category, AffiliateLink, ClickLog, Tip
 
 load_dotenv()
 
@@ -39,6 +39,10 @@ def get_widgets(placement):
     ).order_by(AffiliateLink.created_at.asc()).all()
 
 
+def get_tips(page):
+    return Tip.query.filter_by(page=page, active=True).order_by(Tip.created_at.asc()).all()
+
+
 # ---------- PUBLIC ROUTES ----------
 
 @app.route('/')
@@ -51,13 +55,21 @@ def home():
 @app.route('/flights')
 def flights():
     widgets = get_widgets('flights_page')
-    return render_template('flights.html', widgets=widgets)
+    tips = get_tips('flights')
+    return render_template('flights.html', widgets=widgets, tips=tips)
 
 
 @app.route('/hotels')
 def hotels():
     widgets = get_widgets('hotels_page')
-    return render_template('hotels.html', widgets=widgets)
+    tips = get_tips('hotels')
+    return render_template('hotels.html', widgets=widgets, tips=tips)
+
+
+@app.route('/tips')
+def all_tips():
+    tips = Tip.query.filter_by(active=True).order_by(Tip.created_at.desc()).all()
+    return render_template('tips.html', tips=tips)
 
 
 @app.route('/blog')
@@ -243,6 +255,57 @@ def delete_link(link_id):
     db.session.commit()
     flash('Deleted.')
     return redirect(url_for('admin_links'))
+
+
+# ---------- ADMIN: TIPS ----------
+
+@app.route('/admin/tips')
+@login_required
+def admin_tips():
+    tips = Tip.query.order_by(Tip.created_at.desc()).all()
+    return render_template('admin/tips.html', tips=tips)
+
+
+@app.route('/admin/tips/new', methods=['GET', 'POST'])
+@login_required
+def new_tip():
+    if request.method == 'POST':
+        tip = Tip(
+            title=request.form.get('title'),
+            content=request.form.get('content'),
+            page=request.form.get('page'),
+            active=True if request.form.get('active') == 'on' else False
+        )
+        db.session.add(tip)
+        db.session.commit()
+        flash('Tip created.')
+        return redirect(url_for('admin_tips'))
+    return render_template('admin/tip_form.html', tip=None)
+
+
+@app.route('/admin/tips/edit/<int:tip_id>', methods=['GET', 'POST'])
+@login_required
+def edit_tip(tip_id):
+    tip = Tip.query.get_or_404(tip_id)
+    if request.method == 'POST':
+        tip.title = request.form.get('title')
+        tip.content = request.form.get('content')
+        tip.page = request.form.get('page')
+        tip.active = True if request.form.get('active') == 'on' else False
+        db.session.commit()
+        flash('Updated.')
+        return redirect(url_for('admin_tips'))
+    return render_template('admin/tip_form.html', tip=tip)
+
+
+@app.route('/admin/tips/delete/<int:tip_id>')
+@login_required
+def delete_tip(tip_id):
+    tip = Tip.query.get_or_404(tip_id)
+    db.session.delete(tip)
+    db.session.commit()
+    flash('Deleted.')
+    return redirect(url_for('admin_tips'))
 
 
 # ---------- DATABASE SETUP ----------

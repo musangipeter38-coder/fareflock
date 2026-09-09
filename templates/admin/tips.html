@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Manage Tips — Fareflock{% endblock %}
+{% block content %}
+<section class="admin-dashboard">
+    <div class="admin-header">
+        <h1>Manage Tips & Guides</h1>
+        <a href="{{ url_for('new_tip') }}" class="btn-primary">+ New Tip</a>
+        <a href="{{ url_for('admin_dashboard') }}" class="btn-secondary">Back to Posts</a>
+    </div>
+
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Shows On</th>
+                <th>Active</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for tip in tips %}
+            <tr>
+                <td>{{ tip.title }}</td>
+                <td>{{ tip.page }}</td>
+                <td>{{ 'Yes' if tip.active else 'No' }}</td>
+                <td>
+                    <a href="{{ url_for('edit_tip', tip_id=tip.id) }}">Edit</a> |
+                    <a href="{{ url_for('delete_tip', tip_id=tip.id) }}" onclick="return confirm('Delete this tip?')">Delete</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endblock %}

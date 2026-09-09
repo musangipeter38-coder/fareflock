@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit Tip' if tip else 'New Tip' }} — Fareflock{% endblock %}
+{% block content %}
+<section class="post-form">
+    <h1>{{ 'Edit Tip' if tip else 'New Tip' }}</h1>
+    <form method="POST">
+        <label>Title</label>
+        <input type="text" name="title" value="{{ tip.title if tip else '' }}" required>
+
+        <label>Content</label>
+        <textarea name="content" rows="6" required>{{ tip.content if tip else '' }}</textarea>
+
+        <label>Shows on Page</label>
+        <select name="page">
+            <option value="flights" {% if tip and tip.page == 'flights' %}selected{% endif %}>Flights Page</option>
+            <option value="hotels" {% if tip and tip.page == 'hotels' %}selected{% endif %}>Hotels Page</option>
+            <option value="homepage" {% if tip and tip.page == 'homepage' %}selected{% endif %}>Homepage</option>
+        </select>
+
+        <label class="checkbox-label">
+            <input type="checkbox" name="active" {% if tip and tip.active %}checked{% elif not tip %}checked{% endif %}>
+            Active
+        </label>
+
+        <button type="submit" class="btn-primary">Save</button>
+    </form>
+</section>
+{% endblock %}

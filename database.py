@@ -47,9 +47,9 @@ class Post(db.Model):
 class AffiliateLink(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
-    link_type = db.Column(db.String(20), nullable=False)     # 'widget' or 'url'
-    placement = db.Column(db.String(50))                      # 'homepage', 'flights_page', 'hotels_page', 'blog_inline'
-    content = db.Column(db.Text, nullable=False)               # widget embed code OR plain affiliate URL
+    link_type = db.Column(db.String(20), nullable=False)
+    placement = db.Column(db.String(50))
+    content = db.Column(db.Text, nullable=False)
     description = db.Column(db.String(300))
     active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -61,3 +61,12 @@ class ClickLog(db.Model):
     post_slug = db.Column(db.String(200))
     clicked_at = db.Column(db.DateTime, default=datetime.utcnow)
     affiliate_link = db.relationship('AffiliateLink', backref='clicks')
+
+
+class Tip(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    page = db.Column(db.String(50), default='flights')   # which page's carousel shows it: 'flights', 'hotels', 'homepage'
+    active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
