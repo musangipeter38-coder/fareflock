@@ -5,7 +5,6 @@ from flask import Flask, render_template, redirect, url_for, request, flash, abo
 from flask_login import LoginManager, login_user, logout_user, login_required
 from flask_bcrypt import Bcrypt
 from dotenv import load_dotenv
-from sqlalchemy import text
 from database import db, Admin, Post, Category, AffiliateLink, ClickLog
 
 load_dotenv()
@@ -245,12 +244,7 @@ def delete_link(link_id):
 
 
 # ---------- DATABASE SETUP ----------
-# TEMPORARY: cascading drop of affiliate_link + click_log to rebuild with new schema.
-# This block gets removed after the next successful deploy.
 with app.app_context():
-    db.session.execute(text('DROP TABLE IF EXISTS click_log CASCADE'))
-    db.session.execute(text('DROP TABLE IF EXISTS affiliate_link CASCADE'))
-    db.session.commit()
     db.create_all()
 
 if __name__ == '__main__':
