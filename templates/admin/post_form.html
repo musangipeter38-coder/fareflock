@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit Post' if post else 'New Post' }} — Fareflock{% endblock %}
+{% block content %}
+<section class="post-form">
+    <h1>{{ 'Edit Post' if post else 'New Post' }}</h1>
+    <form method="POST">
+        <label>Title</label>
+        <input type="text" name="title" value="{{ post.title if post else '' }}" required>
+
+        <label>Category</label>
+        <select name="category_id">
+            <option value="">— None —</option>
+            {% for cat in categories %}
+                <option value="{{ cat.id }}" {% if post and post.category_id == cat.id %}selected{% endif %}>{{ cat.name }}</option>
+            {% endfor %}
+        </select>
+
+        <label>Meta Description</label>
+        <input type="text" name="meta_description" value="{{ post.meta_description if post else '' }}">
+
+        <label>Body (HTML allowed)</label>
+        <textarea name="body" rows="12">{{ post.body if post else '' }}</textarea>
+
+        <label class="checkbox-label">
+            <input type="checkbox" name="published" {% if post and post.published %}checked{% endif %}>
+            Published
+        </label>
+
+        <button type="submit" class="btn-primary">Save Post</button>
+    </form>
+</section>
+{% endblock %}
