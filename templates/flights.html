@@ -6,15 +6,19 @@
     <p>Search real-time flight deals — powered by Fareflock's booking partners.</p>
 </section>
 
-<section class="widget-section">
-    {% if widget %}
+{% if widgets %}
+    {% for widget in widgets %}
+    <section class="widget-section">
         {{ widget.content | safe }}
-    {% else %}
-        <div class="widget-placeholder">
-            <p>Flight search widget coming soon.</p>
-        </div>
-    {% endif %}
+    </section>
+    {% endfor %}
+{% else %}
+<section class="widget-section">
+    <div class="widget-placeholder">
+        <p>Flight search widget coming soon.</p>
+    </div>
 </section>
+{% endif %}
 
 <section class="content-block">
     <h2>Tips for Booking Flights</h2>

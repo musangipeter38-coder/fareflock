@@ -1,10 +1,13 @@
 {% extends "base.html" %}
 {% block title %}Fareflock — Fly Smarter, Travel Further{% endblock %}
 {% block content %}
-{% if widget %}
-<section class="widget-section">
-    {{ widget.content | safe }}
-</section>
+
+{% if widgets %}
+    {% for widget in widgets %}
+    <section class="widget-section">
+        {{ widget.content | safe }}
+    </section>
+    {% endfor %}
 {% endif %}
 
 <section class="hero">

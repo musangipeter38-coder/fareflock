@@ -6,15 +6,19 @@
     <p>Hotel deals worldwide, curated for real budgets.</p>
 </section>
 
-<section class="widget-section">
-    {% if widget %}
+{% if widgets %}
+    {% for widget in widgets %}
+    <section class="widget-section">
         {{ widget.content | safe }}
-    {% else %}
-        <div class="widget-placeholder">
-            <p>Hotel search widget coming soon.</p>
-        </div>
-    {% endif %}
+    </section>
+    {% endfor %}
+{% else %}
+<section class="widget-section">
+    <div class="widget-placeholder">
+        <p>Hotel search widget coming soon.</p>
+    </div>
 </section>
+{% endif %}
 
 <section class="content-block">
     <h2>How to Pick a Hotel That's Actually Worth It</h2>

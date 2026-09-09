@@ -33,8 +33,10 @@ def slugify(text_in):
     return text_in.strip('-')
 
 
-def get_widget(placement):
-    return AffiliateLink.query.filter_by(placement=placement, link_type='widget', active=True).first()
+def get_widgets(placement):
+    return AffiliateLink.query.filter_by(
+        placement=placement, link_type='widget', active=True
+    ).order_by(AffiliateLink.created_at.asc()).all()
 
 
 # ---------- PUBLIC ROUTES ----------
@@ -42,20 +44,20 @@ def get_widget(placement):
 @app.route('/')
 def home():
     latest_posts = Post.query.filter_by(published=True).order_by(Post.created_at.desc()).limit(3).all()
-    widget = get_widget('homepage')
-    return render_template('index.html', posts=latest_posts, widget=widget)
+    widgets = get_widgets('homepage')
+    return render_template('index.html', posts=latest_posts, widgets=widgets)
 
 
 @app.route('/flights')
 def flights():
-    widget = get_widget('flights_page')
-    return render_template('flights.html', widget=widget)
+    widgets = get_widgets('flights_page')
+    return render_template('flights.html', widgets=widgets)
 
 
 @app.route('/hotels')
 def hotels():
-    widget = get_widget('hotels_page')
-    return render_template('hotels.html', widget=widget)
+    widgets = get_widgets('hotels_page')
+    return render_template('hotels.html', widgets=widgets)
 
 
 @app.route('/blog')
