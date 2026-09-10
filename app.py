@@ -1,7 +1,7 @@
 import os
 import re
 from datetime import datetime
-from flask import Flask, render_template, redirect, url_for, request, flash, abort
+from flask import Flask, render_template, redirect, url_for, request, flash, abort, Response
 from flask_login import LoginManager, login_user, logout_user, login_required
 from flask_bcrypt import Bcrypt
 from dotenv import load_dotenv
@@ -21,6 +21,8 @@ bcrypt = Bcrypt(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
+
+SITE_URL = os.environ.get('SITE_URL', 'https://fareflock.onrender.com')
 
 
 @login_manager.user_loader
@@ -61,33 +63,53 @@ app.jinja_env.filters['widget_srcdoc'] = widget_srcdoc
 def home():
     latest_posts = Post.query.filter_by(published=True).order_by(Post.created_at.desc()).limit(3).all()
     widgets = get_widgets('homepage')
-    return render_template('index.html', posts=latest_posts, widgets=widgets)
+    return render_template(
+        'index.html', posts=latest_posts, widgets=widgets,
+        meta_title='Fareflock — Fly Smarter, Travel Further',
+        meta_description='Real flight and hotel deals, honest guides, and travel tips for travelers everywhere.'
+    )
 
 
 @app.route('/flights')
 def flights():
     widgets = get_widgets('flights_page')
     tips = get_tips('flights')
-    return render_template('flights.html', widgets=widgets, tips=tips)
+    return render_template(
+        'flights.html', widgets=widgets, tips=tips,
+        meta_title='Find Cheap Flights — Fareflock',
+        meta_description='Search real-time flight deals and read honest booking tips, curated by Fareflock.'
+    )
 
 
 @app.route('/hotels')
 def hotels():
     widgets = get_widgets('hotels_page')
     tips = get_tips('hotels')
-    return render_template('hotels.html', widgets=widgets, tips=tips)
+    return render_template(
+        'hotels.html', widgets=widgets, tips=tips,
+        meta_title='Find Hotels — Fareflock',
+        meta_description='Hotel deals worldwide, curated for real budgets, plus honest guides on picking the right stay.'
+    )
 
 
 @app.route('/tips')
 def all_tips():
     tips = Tip.query.filter_by(active=True).order_by(Tip.created_at.desc()).all()
-    return render_template('tips.html', tips=tips)
+    return render_template(
+        'tips.html', tips=tips,
+        meta_title='Travel Tips & Guides — Fareflock',
+        meta_description='Every travel guide and booking tip Fareflock has shared, all in one place.'
+    )
 
 
 @app.route('/blog')
 def blog():
     posts = Post.query.filter_by(published=True).order_by(Post.created_at.desc()).all()
-    return render_template('blog.html', posts=posts)
+    return render_template(
+        'blog.html', posts=posts,
+        meta_title='Blog — Fareflock',
+        meta_description='Guides, deals, and honest travel advice from Fareflock.'
+    )
 
 
 @app.route('/blog/<slug>')
@@ -100,12 +122,48 @@ def post_detail(slug):
         Post.id != post.id,
         Post.published == True
     ).limit(3).all()
-    return render_template('post.html', post=post, related=related)
+    return render_template(
+        'post.html', post=post, related=related,
+        meta_title=f'{post.title} — Fareflock',
+        meta_description=post.meta_description or 'Read this travel guide on Fareflock.'
+    )
 
 
 @app.route('/about')
 def about():
-    return render_template('about.html')
+    return render_template(
+        'about.html',
+        meta_title='About — Fareflock',
+        meta_description='Fareflock is a global travel deals and guides site, built with real depth instead of recycled listicles.'
+    )
+
+
+# ---------- SEO: SITEMAP & ROBOTS ----------
+
+@app.route('/sitemap.xml')
+def sitemap():
+    posts = Post.query.filter_by(published=True).all()
+    static_pages = ['/', '/flights', '/hotels', '/blog', '/tips', '/about']
+
+    xml_parts = ['<?xml version="1.0" encoding="UTF-8"?>']
+    xml_parts.append('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">')
+
+    for page in static_pages:
+        xml_parts.append(f'<url><loc>{SITE_URL}{page}</loc></url>')
+
+    for post in posts:
+        xml_parts.append(f'<url><loc>{SITE_URL}/blog/{post.slug}</loc></url>')
+
+    xml_parts.append('</urlset>')
+    xml_content = ''.join(xml_parts)
+
+    return Response(xml_content, mimetype='application/xml')
+
+
+@app.route('/robots.txt')
+def robots():
+    content = f"User-agent: *\nAllow: /\nDisallow: /admin/\nSitemap: {SITE_URL}/sitemap.xml\n"
+    return Response(content, mimetype='text/plain')
 
 
 # ---------- CLICK TRACKING ----------
@@ -325,7 +383,6 @@ def delete_tip(tip_id):
 # ---------- DATABASE SETUP ----------
 with app.app_context():
     db.create_all()
-    # Safe, repeatable column add — does nothing if the column already exists.
     try:
         db.session.execute(text('ALTER TABLE affiliate_link ADD COLUMN IF NOT EXISTS height INTEGER DEFAULT 500'))
         db.session.commit()
