@@ -77,10 +77,32 @@ def get_tips(page):
 
 
 def widget_srcdoc(content):
+    """
+    Wraps a stored affiliate widget snippet in a minimal HTML document for
+    the iframe's srcdoc. Includes a small script that continuously measures
+    the widget's real rendered height and reports it to the parent page via
+    postMessage, so the page can auto-resize the iframe to fit the widget
+    exactly (no more clipped/scrolling widgets, no more manually guessed
+    pixel heights in admin).
+    """
     return (
         "<!DOCTYPE html><html><head><meta charset='UTF-8'>"
-        "<style>body{margin:0;padding:0;font-family:sans-serif;}</style>"
-        "</head><body>" + content + "</body></html>"
+        "<meta name='viewport' content='width=device-width, initial-scale=1'>"
+        "<style>html,body{margin:0;padding:0;font-family:sans-serif;}"
+        "img{max-width:100%;}</style>"
+        "</head><body>" + content +
+        "<script>"
+        "(function(){"
+        "function report(){"
+        "var h=Math.max(document.documentElement.scrollHeight,document.body.scrollHeight);"
+        "window.parent.postMessage({fareflockWidgetHeight:h},'*');"
+        "}"
+        "window.addEventListener('load',report);"
+        "if(window.ResizeObserver){new ResizeObserver(report).observe(document.body);}"
+        "setInterval(report,1000);"
+        "})();"
+        "</script>"
+        "</body></html>"
     )
 
 
