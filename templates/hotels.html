@@ -9,7 +9,9 @@
 {% if widgets %}
     {% for widget in widgets %}
     <section class="widget-section">
-        {{ widget.content | safe }}
+        <div class="widget-card">
+            {{ widget.content | safe }}
+        </div>
     </section>
     {% endfor %}
 {% else %}
@@ -22,6 +24,48 @@
 
 <section class="content-block">
     <h2>How to Pick a Hotel That's Actually Worth It</h2>
+
+    {% if tips %}
+    <div class="tip-carousel" id="tip-carousel-hotels">
+        <div class="tip-carousel-track" id="tip-track-hotels">
+            {% for tip in tips %}
+            <div class="tip-slide">
+                <h3>{{ tip.title }}</h3>
+                <p>{{ tip.content }}</p>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="tip-carousel-dots" id="tip-dots-hotels"></div>
+    </div>
+    <script>
+        (function() {
+            const track = document.getElementById('tip-track-hotels');
+            const dotsContainer = document.getElementById('tip-dots-hotels');
+            const slides = track.children;
+            let current = 0;
+
+            for (let i = 0; i < slides.length; i++) {
+                const dot = document.createElement('span');
+                dot.className = 'tip-dot' + (i === 0 ? ' active' : '');
+                dotsContainer.appendChild(dot);
+            }
+
+            function showSlide(index) {
+                track.style.transform = 'translateX(-' + (index * 100) + '%)';
+                const dots = dotsContainer.children;
+                for (let i = 0; i < dots.length; i++) {
+                    dots[i].className = 'tip-dot' + (i === index ? ' active' : '');
+                }
+            }
+
+            setInterval(function() {
+                current = (current + 1) % slides.length;
+                showSlide(current);
+            }, 15000);
+        })();
+    </script>
+    {% else %}
     <p>Guides on budget vs comfort stays coming soon.</p>
+    {% endif %}
 </section>
 {% endblock %}
