@@ -24,8 +24,6 @@ login_manager.login_view = 'login'
 
 SITE_URL = os.environ.get('SITE_URL', 'https://fareflock.onrender.com')
 
-# Travelpayouts-style service categories. 'flights' and 'hotels' keep their
-# own dedicated pages/templates; everything else uses the generic category page.
 SERVICE_CATEGORIES = [
     {'slug': 'flights', 'name': 'Flights', 'icon': '✈️', 'placement': 'flights_page', 'route': 'flights'},
     {'slug': 'hotels', 'name': 'Hotels & Accommodations', 'icon': '🛏️', 'placement': 'hotels_page', 'route': 'hotels'},
@@ -93,22 +91,17 @@ app.jinja_env.filters['widget_srcdoc'] = widget_srcdoc
 
 @app.route('/')
 def home():
-    latest_posts = Post.query.filter_by(published=True).order_by(Post.created_at.desc()).limit(3).all()
     widgets = get_widgets('homepage')
     return render_template(
-        'index.html', posts=latest_posts, widgets=widgets,
-        meta_title='Fareflock — Fly Smarter, Travel Further',
-        meta_description='Real flight and hotel deals, honest guides, and travel tips for travelers everywhere.'
+        'index.html', widgets=widgets,
+        meta_title='Fareflock — Explore All Travel Services',
+        meta_description='Flights, hotels, tours, insurance, and more — real deals and honest guides, all in one place.'
     )
 
 
 @app.route('/explore')
 def explore():
-    return render_template(
-        'explore.html',
-        meta_title='Explore Services — Fareflock',
-        meta_description='Browse every travel service Fareflock covers — flights, hotels, tours, insurance, and more.'
-    )
+    return redirect(url_for('home'), code=301)
 
 
 @app.route('/flights')
@@ -197,7 +190,7 @@ def about():
 @app.route('/sitemap.xml')
 def sitemap():
     posts = Post.query.filter_by(published=True).all()
-    static_pages = ['/', '/flights', '/hotels', '/blog', '/tips', '/about', '/explore']
+    static_pages = ['/', '/flights', '/hotels', '/blog', '/tips', '/about']
     for cat in SERVICE_CATEGORIES:
         if not cat['route']:
             static_pages.append(f"/category/{cat['slug']}")

@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Fareflock — Fly Smarter, Travel Further{% endblock %}
+{% block title %}Fareflock — Explore All Travel Services{% endblock %}
 {% block content %}
 
 {% if widgets %}
@@ -12,22 +12,19 @@
     {% endfor %}
 {% endif %}
 
-<section class="hero">
-    <h1>Find Your Next Adventure</h1>
-    <p>Real flight and hotel deals, curated for travelers who want more for less.</p>
+<section class="page-hero">
+    <h1>Explore All Services</h1>
+    <p>Real deals and honest guides — flights, hotels, tours, and more, all in one place.</p>
 </section>
 
-<section class="latest-posts">
-    <h2>Latest from the Blog</h2>
-    {% if posts %}
-        {% for post in posts %}
-            <article class="post-card">
-                <h3>{{ post.title }}</h3>
-                <p>{{ post.meta_description }}</p>
-            </article>
+<section class="tips-grid-section">
+    <div class="category-grid">
+        {% for cat in SERVICE_CATEGORIES %}
+        <a href="{{ category_url(cat) }}" class="category-card">
+            <span class="category-icon">{{ cat.icon }}</span>
+            <span class="category-name">{{ cat.name }}</span>
+        </a>
         {% endfor %}
-    {% else %}
-        <p>No posts yet — coming soon.</p>
-    {% endif %}
+    </div>
 </section>
 {% endblock %}
