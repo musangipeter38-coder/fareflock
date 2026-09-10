@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Explore Services — Fareflock{% endblock %}
+{% block content %}
+<section class="page-hero">
+    <h1>Explore All Services</h1>
+    <p>Everything Fareflock covers, in one place.</p>
+</section>
+
+<section class="tips-grid-section">
+    <div class="category-grid">
+        {% for cat in SERVICE_CATEGORIES %}
+        <a href="{{ category_url(cat) }}" class="category-card">
+            <span class="category-icon">{{ cat.icon }}</span>
+            <span class="category-name">{{ cat.name }}</span>
+        </a>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

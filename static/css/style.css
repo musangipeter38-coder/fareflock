@@ -249,3 +249,26 @@ button, .btn-primary {
     text-decoration: none;
 }
 .admin-dot:hover { background: var(--electric-blue); }
+.category-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+}
+.category-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--bg-panel);
+    border: 1px solid var(--border-glow);
+    border-radius: 12px;
+    padding: 20px;
+    text-decoration: none;
+    color: var(--text-light);
+    transition: border-color 0.2s, transform 0.2s;
+}
+.category-card:hover {
+    border-color: var(--electric-blue);
+    transform: translateY(-2px);
+}
+.category-icon { font-size: 28px; }
+.category-name { font-weight: 600; }

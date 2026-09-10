@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}{{ category.name }} — Fareflock{% endblock %}
+{% block content %}
+<section class="page-hero">
+    <h1>{{ category.icon }} {{ category.name }}</h1>
+    <p>Deals and options for {{ category.name.lower() }}, curated by Fareflock.</p>
+</section>
+
+{% if widgets %}
+    {% for widget in widgets %}
+    <section class="widget-section">
+        <div class="widget-card">
+            <iframe class="widget-frame" style="height:{{ widget.height }}px;" srcdoc="{{ widget.content | widget_srcdoc }}" sandbox="allow-scripts allow-popups allow-forms allow-same-origin allow-top-navigation" loading="lazy"></iframe>
+        </div>
+    </section>
+    {% endfor %}
+{% else %}
+<section class="widget-section">
+    <div class="widget-placeholder">
+        <p>{{ category.name }} widgets coming soon.</p>
+    </div>
+</section>
+{% endif %}
+{% endblock %}

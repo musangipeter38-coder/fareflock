@@ -17,11 +17,12 @@
         <select name="placement">
             <option value="">— Not applicable (for URL type) —</option>
             <option value="homepage" {% if link and link.placement == 'homepage' %}selected{% endif %}>Homepage</option>
-            <option value="flights_page" {% if link and link.placement == 'flights_page' %}selected{% endif %}>Flights Page</option>
-            <option value="hotels_page" {% if link and link.placement == 'hotels_page' %}selected{% endif %}>Hotels Page</option>
+            {% for cat in categories %}
+            <option value="{{ cat.placement }}" {% if link and link.placement == cat.placement %}selected{% endif %}>{{ cat.icon }} {{ cat.name }}</option>
+            {% endfor %}
         </select>
 
-        <label>Widget Height (pixels — how tall this widget's box should be. Bigger widgets like search forms need 500-700; small cards need 300-400)</label>
+        <label>Widget Height (pixels)</label>
         <input type="number" name="height" value="{{ link.height if link else 500 }}" min="200" max="1200">
 
         <label>Content (widget embed code, OR the real affiliate URL if type is "URL")</label>

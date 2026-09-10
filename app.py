@@ -24,6 +24,38 @@ login_manager.login_view = 'login'
 
 SITE_URL = os.environ.get('SITE_URL', 'https://fareflock.onrender.com')
 
+# Travelpayouts-style service categories. 'flights' and 'hotels' keep their
+# own dedicated pages/templates; everything else uses the generic category page.
+SERVICE_CATEGORIES = [
+    {'slug': 'flights', 'name': 'Flights', 'icon': '✈️', 'placement': 'flights_page', 'route': 'flights'},
+    {'slug': 'hotels', 'name': 'Hotels & Accommodations', 'icon': '🛏️', 'placement': 'hotels_page', 'route': 'hotels'},
+    {'slug': 'tours', 'name': 'Tours & Activities', 'icon': '🚶', 'placement': 'category_tours', 'route': None},
+    {'slug': 'insurance', 'name': 'Insurance', 'icon': '🛡️', 'placement': 'category_insurance', 'route': None},
+    {'slug': 'transfers', 'name': 'Transfers & Airport Services', 'icon': '🚕', 'placement': 'category_transfers', 'route': None},
+    {'slug': 'trains-buses', 'name': 'Trains & Buses', 'icon': '🚆', 'placement': 'category_trains_buses', 'route': None},
+    {'slug': 'car-rentals', 'name': 'Car & Bike Rentals', 'icon': '🚗', 'placement': 'category_car_rentals', 'route': None},
+    {'slug': 'package-tours', 'name': 'Package Tours', 'icon': '🏝️', 'placement': 'category_package_tours', 'route': None},
+    {'slug': 'other', 'name': 'Other', 'icon': '🔘', 'placement': 'category_other', 'route': None},
+    {'slug': 'sim-cards', 'name': 'SIM Cards', 'icon': '📶', 'placement': 'category_sim_cards', 'route': None},
+]
+
+
+def get_category(slug):
+    for cat in SERVICE_CATEGORIES:
+        if cat['slug'] == slug:
+            return cat
+    return None
+
+
+def category_url(cat):
+    if cat['route']:
+        return url_for(cat['route'])
+    return url_for('category_page', slug=cat['slug'])
+
+
+app.jinja_env.globals['SERVICE_CATEGORIES'] = SERVICE_CATEGORIES
+app.jinja_env.globals['category_url'] = category_url
+
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -70,6 +102,15 @@ def home():
     )
 
 
+@app.route('/explore')
+def explore():
+    return render_template(
+        'explore.html',
+        meta_title='Explore Services — Fareflock',
+        meta_description='Browse every travel service Fareflock covers — flights, hotels, tours, insurance, and more.'
+    )
+
+
 @app.route('/flights')
 def flights():
     widgets = get_widgets('flights_page')
@@ -89,6 +130,19 @@ def hotels():
         'hotels.html', widgets=widgets, tips=tips,
         meta_title='Find Hotels — Fareflock',
         meta_description='Hotel deals worldwide, curated for real budgets, plus honest guides on picking the right stay.'
+    )
+
+
+@app.route('/category/<slug>')
+def category_page(slug):
+    cat = get_category(slug)
+    if not cat or cat['route']:
+        abort(404)
+    widgets = get_widgets(cat['placement'])
+    return render_template(
+        'category.html', category=cat, widgets=widgets,
+        meta_title=f"{cat['name']} — Fareflock",
+        meta_description=f"{cat['name']} deals and options, curated by Fareflock."
     )
 
 
@@ -143,7 +197,10 @@ def about():
 @app.route('/sitemap.xml')
 def sitemap():
     posts = Post.query.filter_by(published=True).all()
-    static_pages = ['/', '/flights', '/hotels', '/blog', '/tips', '/about']
+    static_pages = ['/', '/flights', '/hotels', '/blog', '/tips', '/about', '/explore']
+    for cat in SERVICE_CATEGORIES:
+        if not cat['route']:
+            static_pages.append(f"/category/{cat['slug']}")
 
     xml_parts = ['<?xml version="1.0" encoding="UTF-8"?>']
     xml_parts.append('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">')
@@ -298,7 +355,7 @@ def new_link():
         db.session.commit()
         flash('Affiliate link/widget created.')
         return redirect(url_for('admin_links'))
-    return render_template('admin/link_form.html', link=None)
+    return render_template('admin/link_form.html', link=None, categories=SERVICE_CATEGORIES)
 
 
 @app.route('/admin/links/edit/<int:link_id>', methods=['GET', 'POST'])
@@ -316,7 +373,7 @@ def edit_link(link_id):
         db.session.commit()
         flash('Updated.')
         return redirect(url_for('admin_links'))
-    return render_template('admin/link_form.html', link=link)
+    return render_template('admin/link_form.html', link=link, categories=SERVICE_CATEGORIES)
 
 
 @app.route('/admin/links/delete/<int:link_id>')
