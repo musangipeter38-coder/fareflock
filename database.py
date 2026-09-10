@@ -52,6 +52,7 @@ class AffiliateLink(db.Model):
     content = db.Column(db.Text, nullable=False)
     description = db.Column(db.String(300))
     active = db.Column(db.Boolean, default=True)
+    height = db.Column(db.Integer, default=500)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 
@@ -67,6 +68,6 @@ class Tip(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=False)
     content = db.Column(db.Text, nullable=False)
-    page = db.Column(db.String(50), default='flights')   # which page's carousel shows it: 'flights', 'hotels', 'homepage'
+    page = db.Column(db.String(50), default='flights')
     active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)

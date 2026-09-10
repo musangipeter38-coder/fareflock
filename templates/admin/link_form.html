@@ -21,6 +21,9 @@
             <option value="hotels_page" {% if link and link.placement == 'hotels_page' %}selected{% endif %}>Hotels Page</option>
         </select>
 
+        <label>Widget Height (pixels — how tall this widget's box should be. Bigger widgets like search forms need 500-700; small cards need 300-400)</label>
+        <input type="number" name="height" value="{{ link.height if link else 500 }}" min="200" max="1200">
+
         <label>Content (widget embed code, OR the real affiliate URL if type is "URL")</label>
         <textarea name="content" rows="8" required>{{ link.content if link else '' }}</textarea>
 
@@ -36,9 +39,8 @@
     </form>
 
     {% if link and link.link_type == 'url' %}
-    <p style="margin-top:20px; color:#64748B; font-size:14px;">
-        To use this in a blog post, link to: <code>/out/{{ link.id }}</code><br>
-        Example: <code>&lt;a href="/out/{{ link.id }}"&gt;Book this hotel here →&lt;/a&gt;</code>
+    <p style="margin-top:20px; color:#8B96AD; font-size:14px;">
+        To use this in a blog post, link to: <code>/out/{{ link.id }}</code>
     </p>
     {% endif %}
 </section>

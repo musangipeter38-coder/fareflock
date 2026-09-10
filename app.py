@@ -5,6 +5,7 @@ from flask import Flask, render_template, redirect, url_for, request, flash, abo
 from flask_login import LoginManager, login_user, logout_user, login_required
 from flask_bcrypt import Bcrypt
 from dotenv import load_dotenv
+from sqlalchemy import text
 from database import db, Admin, Post, Category, AffiliateLink, ClickLog, Tip
 
 load_dotenv()
@@ -41,6 +42,17 @@ def get_widgets(placement):
 
 def get_tips(page):
     return Tip.query.filter_by(page=page, active=True).order_by(Tip.created_at.asc()).all()
+
+
+def widget_srcdoc(content):
+    return (
+        "<!DOCTYPE html><html><head><meta charset='UTF-8'>"
+        "<style>body{margin:0;padding:0;font-family:sans-serif;}</style>"
+        "</head><body>" + content + "</body></html>"
+    )
+
+
+app.jinja_env.filters['widget_srcdoc'] = widget_srcdoc
 
 
 # ---------- PUBLIC ROUTES ----------
@@ -221,7 +233,8 @@ def new_link():
             placement=request.form.get('placement') or None,
             content=request.form.get('content'),
             description=request.form.get('description'),
-            active=True if request.form.get('active') == 'on' else False
+            active=True if request.form.get('active') == 'on' else False,
+            height=int(request.form.get('height') or 500)
         )
         db.session.add(link)
         db.session.commit()
@@ -241,6 +254,7 @@ def edit_link(link_id):
         link.content = request.form.get('content')
         link.description = request.form.get('description')
         link.active = True if request.form.get('active') == 'on' else False
+        link.height = int(request.form.get('height') or 500)
         db.session.commit()
         flash('Updated.')
         return redirect(url_for('admin_links'))
@@ -311,6 +325,12 @@ def delete_tip(tip_id):
 # ---------- DATABASE SETUP ----------
 with app.app_context():
     db.create_all()
+    # Safe, repeatable column add — does nothing if the column already exists.
+    try:
+        db.session.execute(text('ALTER TABLE affiliate_link ADD COLUMN IF NOT EXISTS height INTEGER DEFAULT 500'))
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
 
 if __name__ == '__main__':
     app.run(debug=True)

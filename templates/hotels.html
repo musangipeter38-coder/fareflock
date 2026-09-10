@@ -10,7 +10,7 @@
     {% for widget in widgets %}
     <section class="widget-section">
         <div class="widget-card">
-            {{ widget.content | safe }}
+            <iframe class="widget-frame" style="height:{{ widget.height }}px;" srcdoc="{{ widget.content | widget_srcdoc }}" sandbox="allow-scripts allow-popups allow-forms allow-same-origin allow-top-navigation" loading="lazy"></iframe>
         </div>
     </section>
     {% endfor %}
@@ -43,13 +43,11 @@
             const dotsContainer = document.getElementById('tip-dots-hotels');
             const slides = track.children;
             let current = 0;
-
             for (let i = 0; i < slides.length; i++) {
                 const dot = document.createElement('span');
                 dot.className = 'tip-dot' + (i === 0 ? ' active' : '');
                 dotsContainer.appendChild(dot);
             }
-
             function showSlide(index) {
                 track.style.transform = 'translateX(-' + (index * 100) + '%)';
                 const dots = dotsContainer.children;
@@ -57,7 +55,6 @@
                     dots[i].className = 'tip-dot' + (i === index ? ' active' : '');
                 }
             }
-
             setInterval(function() {
                 current = (current + 1) % slides.length;
                 showSlide(current);

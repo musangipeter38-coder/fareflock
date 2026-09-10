@@ -6,7 +6,7 @@
     {% for widget in widgets %}
     <section class="widget-section">
         <div class="widget-card">
-            {{ widget.content | safe }}
+            <iframe class="widget-frame" style="height:{{ widget.height }}px;" srcdoc="{{ widget.content | widget_srcdoc }}" sandbox="allow-scripts allow-popups allow-forms allow-same-origin allow-top-navigation" loading="lazy"></iframe>
         </div>
     </section>
     {% endfor %}
