@@ -77,8 +77,15 @@ nav a:hover { color: var(--electric-blue); }
 .post-card h3 a { color: var(--text-light); text-decoration: none; }
 .post-card h3 a:hover { color: var(--electric-blue); }
 
-.widget-section { max-width: 900px; margin: 20px auto; padding: 0 20px; }
+/* Full-bleed widgets: touch both edges of the browser, no side margins */
+.widget-section {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+}
 .widget-placeholder {
+    max-width: 900px;
+    margin: 20px auto;
     background: var(--bg-panel);
     border: 2px dashed var(--border-glow);
     border-radius: 12px;
@@ -89,9 +96,10 @@ nav a:hover { color: var(--electric-blue); }
 
 .widget-card {
     background: #FFFFFF;
-    border-radius: 16px;
+    width: 100%;
     overflow: hidden;
-    box-shadow: 0 0 0 1px var(--border-glow);
+    border-top: 1px solid var(--border-glow);
+    border-bottom: 1px solid var(--border-glow);
 }
 
 .widget-frame {
