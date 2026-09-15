@@ -14,6 +14,7 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-change-later')
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///fareflock.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 
 db.init_app(app)
 bcrypt = Bcrypt(app)
@@ -51,8 +52,17 @@ def category_url(cat):
     return url_for('category_page', slug=cat['slug'])
 
 
+def asset_version(filename):
+    try:
+        path = os.path.join(app.root_path, 'static', filename)
+        return str(int(os.path.getmtime(path)))
+    except OSError:
+        return '1'
+
+
 app.jinja_env.globals['SERVICE_CATEGORIES'] = SERVICE_CATEGORIES
 app.jinja_env.globals['category_url'] = category_url
+app.jinja_env.globals['asset_version'] = asset_version
 
 
 @login_manager.user_loader
@@ -77,32 +87,10 @@ def get_tips(page):
 
 
 def widget_srcdoc(content):
-    """
-    Wraps a stored affiliate widget snippet in a minimal HTML document for
-    the iframe's srcdoc. Includes a small script that continuously measures
-    the widget's real rendered height and reports it to the parent page via
-    postMessage, so the page can auto-resize the iframe to fit the widget
-    exactly (no more clipped/scrolling widgets, no more manually guessed
-    pixel heights in admin).
-    """
     return (
         "<!DOCTYPE html><html><head><meta charset='UTF-8'>"
-        "<meta name='viewport' content='width=device-width, initial-scale=1'>"
-        "<style>html,body{margin:0;padding:0;font-family:sans-serif;}"
-        "img{max-width:100%;}</style>"
-        "</head><body>" + content +
-        "<script>"
-        "(function(){"
-        "function report(){"
-        "var h=Math.max(document.documentElement.scrollHeight,document.body.scrollHeight);"
-        "window.parent.postMessage({fareflockWidgetHeight:h},'*');"
-        "}"
-        "window.addEventListener('load',report);"
-        "if(window.ResizeObserver){new ResizeObserver(report).observe(document.body);}"
-        "setInterval(report,1000);"
-        "})();"
-        "</script>"
-        "</body></html>"
+        "<style>body{margin:0;padding:0;font-family:sans-serif;}</style>"
+        "</head><body>" + content + "</body></html>"
     )
 
 
