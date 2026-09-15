@@ -25,15 +25,12 @@ login_manager.login_view = 'login'
 
 SITE_URL = os.environ.get('SITE_URL', 'https://fareflock.onrender.com')
 
+# Hotels, Insurance, Trains & Buses, and Package Tours removed for now — not available yet.
 SERVICE_CATEGORIES = [
     {'slug': 'flights', 'name': 'Flights', 'icon': '✈️', 'placement': 'flights_page', 'route': 'flights'},
-    {'slug': 'hotels', 'name': 'Hotels & Accommodations', 'icon': '🛏️', 'placement': 'hotels_page', 'route': 'hotels'},
     {'slug': 'tours', 'name': 'Tours & Activities', 'icon': '🚶', 'placement': 'category_tours', 'route': None},
-    {'slug': 'insurance', 'name': 'Insurance', 'icon': '🛡️', 'placement': 'category_insurance', 'route': None},
     {'slug': 'transfers', 'name': 'Transfers & Airport Services', 'icon': '🚕', 'placement': 'category_transfers', 'route': None},
-    {'slug': 'trains-buses', 'name': 'Trains & Buses', 'icon': '🚆', 'placement': 'category_trains_buses', 'route': None},
     {'slug': 'car-rentals', 'name': 'Car & Bike Rentals', 'icon': '🚗', 'placement': 'category_car_rentals', 'route': None},
-    {'slug': 'package-tours', 'name': 'Package Tours', 'icon': '🏝️', 'placement': 'category_package_tours', 'route': None},
     {'slug': 'other', 'name': 'Other', 'icon': '🔘', 'placement': 'category_other', 'route': None},
     {'slug': 'sim-cards', 'name': 'SIM Cards', 'icon': '📶', 'placement': 'category_sim_cards', 'route': None},
 ]
