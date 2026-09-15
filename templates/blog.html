@@ -3,20 +3,23 @@
 {% block content %}
 <section class="page-hero">
     <h1>The Fareflock Blog</h1>
-    <p>Guides, deals, and honest travel advice for East African travelers.</p>
+    <p>Real guides, honest reviews, and specific advice — for travelers everywhere.</p>
 </section>
 
 <section class="blog-list">
     {% if posts %}
         {% for post in posts %}
             <article class="post-card">
-                <h3><a href="{{ url_for('post_detail', slug=post.slug) }}">{{ post.title }}</a></h3>
                 {% if post.category %}<span class="category-tag">{{ post.category.name }}</span>{% endif %}
+                <h3><a href="{{ url_for('post_detail', slug=post.slug) }}">{{ post.title }}</a></h3>
                 <p>{{ post.meta_description }}</p>
+                <a href="{{ url_for('post_detail', slug=post.slug) }}" class="tips-see-all">Read guide →</a>
             </article>
         {% endfor %}
     {% else %}
-        <p>No posts yet — check back soon.</p>
+        <div class="widget-placeholder">
+            <p>We're writing our first guides now — check back soon for real, specific travel advice.</p>
+        </div>
     {% endif %}
 </section>
 {% endblock %}
