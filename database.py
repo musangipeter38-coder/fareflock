@@ -71,3 +71,13 @@ class Tip(db.Model):
     page = db.Column(db.String(50), default='flights')
     active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class ChatMessage(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100))
+    contact = db.Column(db.String(150))
+    message = db.Column(db.Text, nullable=False)
+    reply = db.Column(db.Text)
+    replied = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
