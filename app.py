@@ -1,12 +1,12 @@
 import os
 import re
 from datetime import datetime
-from flask import Flask, render_template, redirect, url_for, request, flash, abort, Response
+from flask import Flask, render_template, redirect, url_for, request, flash, abort, Response, jsonify
 from flask_login import LoginManager, login_user, logout_user, login_required
 from flask_bcrypt import Bcrypt
 from dotenv import load_dotenv
 from sqlalchemy import text
-from database import db, Admin, Post, Category, AffiliateLink, ClickLog, Tip
+from database import db, Admin, Post, Category, AffiliateLink, ClickLog, Tip, ChatMessage
 
 load_dotenv()
 
@@ -24,8 +24,8 @@ login_manager.init_app(app)
 login_manager.login_view = 'login'
 
 SITE_URL = os.environ.get('SITE_URL', 'https://fareflock.onrender.com')
+WHATSAPP_NUMBER = os.environ.get('WHATSAPP_NUMBER', '')
 
-# Hotels, Insurance, Trains & Buses, and Package Tours removed for now — not available yet.
 SERVICE_CATEGORIES = [
     {'slug': 'flights', 'name': 'Flights', 'icon': '✈️', 'placement': 'flights_page', 'route': 'flights'},
     {'slug': 'tours', 'name': 'Tours & Activities', 'icon': '🚶', 'placement': 'category_tours', 'route': None},
@@ -60,6 +60,7 @@ def asset_version(filename):
 app.jinja_env.globals['SERVICE_CATEGORIES'] = SERVICE_CATEGORIES
 app.jinja_env.globals['category_url'] = category_url
 app.jinja_env.globals['asset_version'] = asset_version
+app.jinja_env.globals['WHATSAPP_NUMBER'] = WHATSAPP_NUMBER
 
 
 @login_manager.user_loader
@@ -190,6 +191,24 @@ def about():
         meta_title='About — Fareflock',
         meta_description='Fareflock is a global travel deals and guides site, built with real depth instead of recycled listicles.'
     )
+
+
+# ---------- CHAT / CONTACT ----------
+
+@app.route('/api/contact', methods=['POST'])
+def submit_contact():
+    name = request.form.get('name', '').strip()
+    contact = request.form.get('contact', '').strip()
+    message = request.form.get('message', '').strip()
+
+    if not message:
+        return jsonify({'ok': False, 'error': 'Message cannot be empty.'}), 400
+
+    chat_msg = ChatMessage(name=name or 'Anonymous', contact=contact, message=message)
+    db.session.add(chat_msg)
+    db.session.commit()
+
+    return jsonify({'ok': True})
 
 
 # ---------- SEO: SITEMAP & ROBOTS ----------
@@ -435,6 +454,36 @@ def delete_tip(tip_id):
     db.session.commit()
     flash('Deleted.')
     return redirect(url_for('admin_tips'))
+
+
+# ---------- ADMIN: MESSAGES ----------
+
+@app.route('/admin/messages')
+@login_required
+def admin_messages():
+    messages = ChatMessage.query.order_by(ChatMessage.created_at.desc()).all()
+    return render_template('admin/messages.html', messages=messages)
+
+
+@app.route('/admin/messages/reply/<int:msg_id>', methods=['POST'])
+@login_required
+def reply_message(msg_id):
+    msg = ChatMessage.query.get_or_404(msg_id)
+    msg.reply = request.form.get('reply')
+    msg.replied = True
+    db.session.commit()
+    flash('Reply saved.')
+    return redirect(url_for('admin_messages'))
+
+
+@app.route('/admin/messages/delete/<int:msg_id>')
+@login_required
+def delete_message(msg_id):
+    msg = ChatMessage.query.get_or_404(msg_id)
+    db.session.delete(msg)
+    db.session.commit()
+    flash('Deleted.')
+    return redirect(url_for('admin_messages'))
 
 
 # ---------- DATABASE SETUP ----------

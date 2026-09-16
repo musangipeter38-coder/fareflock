@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Messages — Fareflock{% endblock %}
+{% block content %}
+<section class="admin-dashboard">
+    <div class="admin-header">
+        <h1>Visitor Messages</h1>
+        <a href="{{ url_for('admin_dashboard') }}" class="btn-secondary">Back to Posts</a>
+    </div>
+
+    {% for msg in messages %}
+    <div class="post-form" style="margin: 0 0 20px; max-width: 100%;">
+        <p><strong>{{ msg.name }}</strong> {% if msg.contact %}— {{ msg.contact }}{% endif %} <span style="color:var(--text-muted); font-size:13px;">({{ msg.created_at.strftime('%b %d, %Y %H:%M') }})</span></p>
+        <p style="margin-top:8px;">{{ msg.message }}</p>
+
+        {% if msg.replied %}
+        <div style="margin-top:12px; padding:12px; background:var(--bg-panel-alt); border-radius:8px;">
+            <strong style="color:var(--electric-blue);">Your reply:</strong>
+            <p>{{ msg.reply }}</p>
+        </div>
+        {% else %}
+        <form method="POST" action="{{ url_for('reply_message', msg_id=msg.id) }}" style="margin-top:12px;">
+            <textarea name="reply" rows="3" placeholder="Write a reply..." required></textarea>
+            <button type="submit" class="btn-primary">Save Reply</button>
+        </form>
+        {% endif %}
+
+        <a href="{{ url_for('delete_message', msg_id=msg.id) }}" onclick="return confirm('Delete this message?')" style="display:inline-block; margin-top:10px; color:var(--electric-pink); font-size:13px;">Delete</a>
+    </div>
+    {% else %}
+    <p>No messages yet.</p>
+    {% endfor %}
+</section>
+{% endblock %}
