@@ -23,7 +23,7 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
 
-SITE_URL = os.environ.get('SITE_URL', 'https://fareflock.onrender.com')
+SITE_URL = os.environ.get('SITE_URL', 'https://fareflock.com')
 WHATSAPP_NUMBER = os.environ.get('WHATSAPP_NUMBER', '')
 
 SERVICE_CATEGORIES = [
@@ -33,6 +33,15 @@ SERVICE_CATEGORIES = [
     {'slug': 'car-rentals', 'name': 'Car & Bike Rentals', 'icon': '🚗', 'placement': 'category_car_rentals', 'route': None},
     {'slug': 'other', 'name': 'Other', 'icon': '🔘', 'placement': 'category_other', 'route': None},
     {'slug': 'sim-cards', 'name': 'SIM Cards', 'icon': '📶', 'placement': 'category_sim_cards', 'route': None},
+]
+
+BLOG_VISUALS = [
+    {'match': 'flight', 'icon': '✈️', 'gradient': 'grad-blue'},
+    {'match': 'hotel', 'icon': '🛏️', 'gradient': 'grad-purple'},
+    {'match': 'tour', 'icon': '🚶', 'gradient': 'grad-teal'},
+    {'match': 'guide', 'icon': '🧭', 'gradient': 'grad-blue'},
+    {'match': 'review', 'icon': '⭐', 'gradient': 'grad-pink'},
+    {'match': 'visa', 'icon': '🛂', 'gradient': 'grad-teal'},
 ]
 
 
@@ -57,10 +66,27 @@ def asset_version(filename):
         return '1'
 
 
+def post_visual(post):
+    name = (post.category.name.lower() if post.category else '')
+    for v in BLOG_VISUALS:
+        if v['match'] in name:
+            return v
+    return {'icon': '📝', 'gradient': 'grad-blue'}
+
+
+def reading_time(body):
+    text_only = re.sub(r'<[^>]+>', ' ', body or '')
+    words = len(text_only.split())
+    minutes = max(1, round(words / 200))
+    return minutes
+
+
 app.jinja_env.globals['SERVICE_CATEGORIES'] = SERVICE_CATEGORIES
 app.jinja_env.globals['category_url'] = category_url
 app.jinja_env.globals['asset_version'] = asset_version
 app.jinja_env.globals['WHATSAPP_NUMBER'] = WHATSAPP_NUMBER
+app.jinja_env.globals['post_visual'] = post_visual
+app.jinja_env.globals['reading_time'] = reading_time
 
 
 @login_manager.user_loader
@@ -114,8 +140,6 @@ app.jinja_env.filters['widget_srcdoc'] = widget_srcdoc
 
 @app.after_request
 def add_cache_headers(response):
-    # Lets prefetched/hovered pages actually get reused by the browser
-    # instead of being re-downloaded on click. Admin pages stay uncached.
     if response.status_code == 200 and not request.path.startswith('/admin'):
         if response.content_type and 'text/html' in response.content_type:
             response.headers['Cache-Control'] = 'private, max-age=60'
@@ -187,8 +211,10 @@ def all_tips():
 @app.route('/blog')
 def blog():
     posts = Post.query.filter_by(published=True).order_by(Post.created_at.desc()).all()
+    featured = posts[0] if posts else None
+    rest = posts[1:] if len(posts) > 1 else []
     return render_template(
-        'blog.html', posts=posts,
+        'blog.html', featured=featured, posts=rest, total_count=len(posts),
         meta_title='Blog — Fareflock',
         meta_description='Guides, deals, and honest travel advice from Fareflock.'
     )
