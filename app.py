@@ -85,10 +85,30 @@ def get_tips(page):
 
 
 def widget_srcdoc(content):
+    # Injects a small script that reports the widget's real content height
+    # back to the parent page, so the iframe can be resized to fit exactly —
+    # this removes the inner scrollbar and gives one smooth page scroll.
+    resize_script = """
+    <script>
+    (function() {
+        var tries = 0;
+        function sendHeight() {
+            var h = document.body ? document.body.scrollHeight : 0;
+            parent.postMessage({ fareflockWidgetHeight: h }, '*');
+        }
+        window.addEventListener('load', sendHeight);
+        var interval = setInterval(function() {
+            sendHeight();
+            tries++;
+            if (tries > 20) { clearInterval(interval); }
+        }, 500);
+    })();
+    </script>
+    """
     return (
         "<!DOCTYPE html><html><head><meta charset='UTF-8'>"
         "<style>body{margin:0;padding:0;font-family:sans-serif;}</style>"
-        "</head><body>" + content + "</body></html>"
+        "</head><body>" + content + resize_script + "</body></html>"
     )
 
 

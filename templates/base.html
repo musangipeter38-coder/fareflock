@@ -49,5 +49,21 @@
     {% if WHATSAPP_NUMBER %}
     <a href="https://wa.me/{{ WHATSAPP_NUMBER }}?text=Hi%20Fareflock%2C%20I%20have%20a%20question" target="_blank" class="whatsapp-fab" aria-label="Chat on WhatsApp">💬</a>
     {% endif %}
+
+    <script>
+        // Listens for widgets reporting their real content height, and resizes
+        // their iframe to match exactly — removes inner scrollbars, gives one
+        // smooth page scroll across the whole site.
+        window.addEventListener('message', function(event) {
+            if (event.data && typeof event.data.fareflockWidgetHeight === 'number') {
+                var frames = document.querySelectorAll('.widget-frame');
+                for (var i = 0; i < frames.length; i++) {
+                    if (frames[i].contentWindow === event.source) {
+                        frames[i].style.height = (event.data.fareflockWidgetHeight + 10) + 'px';
+                    }
+                }
+            }
+        });
+    </script>
 </body>
 </html>
