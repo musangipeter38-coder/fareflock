@@ -85,9 +85,6 @@ def get_tips(page):
 
 
 def widget_srcdoc(content):
-    # Injects a small script that reports the widget's real content height
-    # back to the parent page, so the iframe can be resized to fit exactly —
-    # this removes the inner scrollbar and gives one smooth page scroll.
     resize_script = """
     <script>
     (function() {
@@ -113,6 +110,16 @@ def widget_srcdoc(content):
 
 
 app.jinja_env.filters['widget_srcdoc'] = widget_srcdoc
+
+
+@app.after_request
+def add_cache_headers(response):
+    # Lets prefetched/hovered pages actually get reused by the browser
+    # instead of being re-downloaded on click. Admin pages stay uncached.
+    if response.status_code == 200 and not request.path.startswith('/admin'):
+        if response.content_type and 'text/html' in response.content_type:
+            response.headers['Cache-Control'] = 'private, max-age=60'
+    return response
 
 
 # ---------- PUBLIC ROUTES ----------

@@ -51,9 +51,7 @@
     {% endif %}
 
     <script>
-        // Listens for widgets reporting their real content height, and resizes
-        // their iframe to match exactly — removes inner scrollbars, gives one
-        // smooth page scroll across the whole site.
+        // Widget auto-resize listener
         window.addEventListener('message', function(event) {
             if (event.data && typeof event.data.fareflockWidgetHeight === 'number') {
                 var frames = document.querySelectorAll('.widget-frame');
@@ -64,6 +62,26 @@
                 }
             }
         });
+
+        // Hover/touch prefetch: warms the browser's cache for a link the
+        // instant someone hovers or touches it, so the actual click lands
+        // on an already-downloaded page instead of waiting on a fresh request.
+        (function() {
+            var prefetched = new Set();
+            function prefetch(url) {
+                if (prefetched.has(url)) return;
+                prefetched.add(url);
+                fetch(url, { credentials: 'same-origin' }).catch(function() {});
+            }
+            document.addEventListener('mouseover', function(e) {
+                var link = e.target.closest('a[href^="/"]');
+                if (link) prefetch(link.href);
+            });
+            document.addEventListener('touchstart', function(e) {
+                var link = e.target.closest('a[href^="/"]');
+                if (link) prefetch(link.href);
+            }, { passive: true });
+        })();
     </script>
 </body>
 </html>
