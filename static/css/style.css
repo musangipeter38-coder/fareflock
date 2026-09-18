@@ -486,3 +486,17 @@ button, .btn-primary {
     .featured-post { grid-template-columns: 1fr; }
     .featured-post-visual { min-height: 140px; font-size: 48px; }
 }
+.social-row {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+}
+.social-row a {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+}
+.social-row a:hover { color: var(--electric-blue); }

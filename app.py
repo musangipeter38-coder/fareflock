@@ -26,6 +26,13 @@ login_manager.login_view = 'login'
 SITE_URL = os.environ.get('SITE_URL', 'https://fareflock.com')
 WHATSAPP_NUMBER = os.environ.get('WHATSAPP_NUMBER', '')
 
+SOCIAL_LINKS = {
+    'facebook': '',
+    'instagram': 'https://instagram.com/fareflock_01',
+    'youtube': 'https://youtube.com/@fareflock',
+    'tiktok': 'https://tiktok.com/@fareflock.com',
+}
+
 SERVICE_CATEGORIES = [
     {'slug': 'flights', 'name': 'Flights', 'icon': '✈️', 'placement': 'flights_page', 'route': 'flights'},
     {'slug': 'tours', 'name': 'Tours & Activities', 'icon': '🚶', 'placement': 'category_tours', 'route': None},
@@ -82,11 +89,13 @@ def reading_time(body):
 
 
 app.jinja_env.globals['SERVICE_CATEGORIES'] = SERVICE_CATEGORIES
+app.jinja_env.globals['SOCIAL_LINKS'] = SOCIAL_LINKS
 app.jinja_env.globals['category_url'] = category_url
 app.jinja_env.globals['asset_version'] = asset_version
 app.jinja_env.globals['WHATSAPP_NUMBER'] = WHATSAPP_NUMBER
 app.jinja_env.globals['post_visual'] = post_visual
 app.jinja_env.globals['reading_time'] = reading_time
+app.jinja_env.globals['SITE_URL'] = SITE_URL
 
 
 @login_manager.user_loader

@@ -5,6 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{{ meta_title or 'Fareflock' }}{% endblock %}</title>
     <meta name="description" content="{{ meta_description or 'Real flight and hotel deals, honest guides, and travel tips.' }}">
+
+    <link rel="icon" type="image/jpeg" href="{{ url_for('static', filename='img/logo.jpeg') }}">
+
+    <meta property="og:title" content="{{ meta_title or 'Fareflock' }}">
+    <meta property="og:description" content="{{ meta_description or 'Real flight and hotel deals, honest guides, and travel tips.' }}">
+    <meta property="og:image" content="{{ SITE_URL }}{{ url_for('static', filename='img/logo.jpeg') }}">
+    <meta property="og:url" content="{{ SITE_URL }}{{ request.path }}">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v={{ asset_version('css/style.css') }}">
 
     <script nowprocket data-noptimize="1" data-cfasync="false" data-wpfc-render="false" seraph-accel-crit="1" data-no-defer="1" data-cmp-ab="2">
@@ -42,6 +52,12 @@
     </main>
 
     <footer class="site-footer">
+        <div class="social-row">
+            {% if SOCIAL_LINKS.facebook %}<a href="{{ SOCIAL_LINKS.facebook }}" target="_blank" aria-label="Facebook">Facebook</a>{% endif %}
+            {% if SOCIAL_LINKS.instagram %}<a href="{{ SOCIAL_LINKS.instagram }}" target="_blank" aria-label="Instagram">Instagram</a>{% endif %}
+            {% if SOCIAL_LINKS.youtube %}<a href="{{ SOCIAL_LINKS.youtube }}" target="_blank" aria-label="YouTube">YouTube</a>{% endif %}
+            {% if SOCIAL_LINKS.tiktok %}<a href="{{ SOCIAL_LINKS.tiktok }}" target="_blank" aria-label="TikTok">TikTok</a>{% endif %}
+        </div>
         <p>&copy; 2026 Fareflock. Fly smarter, travel further.</p>
         <a href="{{ url_for('login') }}" class="admin-dot" aria-label="Admin"></a>
     </footer>
@@ -51,7 +67,6 @@
     {% endif %}
 
     <script>
-        // Widget auto-resize listener
         window.addEventListener('message', function(event) {
             if (event.data && typeof event.data.fareflockWidgetHeight === 'number') {
                 var frames = document.querySelectorAll('.widget-frame');
@@ -63,9 +78,6 @@
             }
         });
 
-        // Hover/touch prefetch: warms the browser's cache for a link the
-        // instant someone hovers or touches it, so the actual click lands
-        // on an already-downloaded page instead of waiting on a fresh request.
         (function() {
             var prefetched = new Set();
             function prefetch(url) {
