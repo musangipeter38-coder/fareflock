@@ -92,9 +92,13 @@ nav a:hover { color: var(--electric-blue); }
     border-radius: 12px;
     margin-bottom: 16px;
     border: 1px solid var(--border-glow);
+    transition: border-color 0.2s, transform 0.2s;
 }
+.post-card:hover { border-color: var(--electric-blue); transform: translateY(-2px); }
+.post-card h3 { margin: 8px 0; font-size: 19px; }
 .post-card h3 a { color: var(--text-light); text-decoration: none; }
 .post-card h3 a:hover { color: var(--electric-blue); }
+.post-card p { color: var(--text-muted); margin-bottom: 10px; }
 
 .widget-section { width: 100%; margin: 0; padding: 0; }
 .widget-placeholder {
@@ -220,7 +224,6 @@ nav a:hover { color: var(--electric-blue); }
 }
 
 .post-detail { max-width: 800px; margin: 40px auto; padding: 0 20px; }
-.post-detail h1 { font-size: clamp(24px, 5vw, 32px); margin-bottom: 8px; }
 .post-body { margin-top: 20px; line-height: 1.7; }
 
 .related-posts { max-width: 800px; margin: 40px auto; padding: 20px; border-top: 1px solid var(--border-glow); }
@@ -288,27 +291,9 @@ button, .btn-primary {
 }
 .admin-dot:hover { background: var(--electric-blue); }
 
-@media (max-width: 480px) {
-    .site-header { padding: 14px 16px; }
-    nav { gap: 6px 16px; }
-    .hero, .page-hero { padding: 40px 16px; }
-    .content-block, .tips-grid-section, .latest-posts, .admin-dashboard { padding: 0 16px; }
-    .tip-slide { padding: 22px 18px; }
-    .admin-header { flex-direction: column; align-items: flex-start; }
-    .admin-table th, .admin-table td { padding: 10px 12px; font-size: 13px; }
-}
-.post-card {
-    transition: border-color 0.2s, transform 0.2s;
-}
-.post-card:hover {
-    border-color: var(--electric-blue);
-    transform: translateY(-2px);
-}
-.post-card h3 { margin: 8px 0; font-size: 19px; }
-.post-card p { color: var(--text-muted); margin-bottom: 10px; }
 .whatsapp-fab {
     position: fixed;
-    bottom: 90px;
+    bottom: 20px;
     right: 20px;
     width: 52px;
     height: 52px;
@@ -323,71 +308,6 @@ button, .btn-primary {
     z-index: 999;
 }
 
-.chat-fab {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    width: 52px;
-    height: 52px;
-    background: linear-gradient(90deg, var(--electric-blue), var(--electric-purple));
-    border: none;
-    border-radius: 50%;
-    font-size: 22px;
-    cursor: pointer;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    z-index: 999;
-}
-
-.chat-widget {
-    position: fixed;
-    bottom: 82px;
-    right: 20px;
-    width: 300px;
-    background: var(--bg-panel);
-    border: 1px solid var(--border-glow);
-    border-radius: 12px;
-    overflow: hidden;
-    z-index: 998;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
-}
-.chat-widget.hidden { display: none; }
-
-.chat-widget-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 16px;
-    background: var(--bg-panel-alt);
-    font-weight: 600;
-}
-.chat-widget-header button {
-    background: none;
-    border: none;
-    color: var(--text-light);
-    cursor: pointer;
-    font-size: 16px;
-    margin: 0;
-    padding: 0;
-}
-
-#chat-form-area {
-    padding: 16px;
-}
-#chat-form-area input, #chat-form-area textarea {
-    width: 100%;
-    margin-bottom: 8px;
-    padding: 8px;
-    border: 1px solid var(--border-glow);
-    border-radius: 6px;
-    background: var(--bg-panel-alt);
-    color: var(--text-light);
-    font-size: 13px;
-}
-
-@media (max-width: 480px) {
-    .chat-widget { width: calc(100vw - 32px); right: 16px; }
-    .whatsapp-fab, .chat-fab { width: 46px; height: 46px; }
-}
 .blog-count { margin-top: 12px; font-size: 14px; color: var(--electric-blue); }
 
 .grad-blue { background: linear-gradient(135deg, #1E3A8A, #00D4FF); }
@@ -482,21 +402,37 @@ button, .btn-primary {
 .related-posts { max-width: 900px; }
 .related-posts h2 { margin-bottom: 16px; }
 
-@media (max-width: 640px) {
-    .featured-post { grid-template-columns: 1fr; }
-    .featured-post-visual { min-height: 140px; font-size: 48px; }
-}
 .social-row {
     display: flex;
     justify-content: center;
     gap: 16px;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
     flex-wrap: wrap;
 }
-.social-row a {
+.social-icon {
     color: var(--text-muted);
-    text-decoration: none;
-    font-size: 13px;
-    font-weight: 600;
+    display: inline-flex;
+    transition: color 0.2s, transform 0.2s;
 }
-.social-row a:hover { color: var(--electric-blue); }
+.social-icon svg { width: 20px; height: 20px; }
+.social-icon:hover {
+    color: var(--electric-blue);
+    transform: translateY(-2px);
+}
+
+@media (max-width: 640px) {
+    .featured-post { grid-template-columns: 1fr; }
+    .featured-post-visual { min-height: 140px; font-size: 48px; }
+}
+
+@media (max-width: 480px) {
+    .site-header { padding: 14px 16px; }
+    nav { gap: 6px 16px; }
+    .hero, .page-hero { padding: 40px 16px; }
+    .content-block, .tips-grid-section, .latest-posts, .admin-dashboard { padding: 0 16px; }
+    .tip-slide { padding: 22px 18px; }
+    .admin-header { flex-direction: column; align-items: flex-start; }
+    .admin-table th, .admin-table td { padding: 10px 12px; font-size: 13px; }
+    .chat-widget { width: calc(100vw - 32px); right: 16px; }
+    .whatsapp-fab { width: 46px; height: 46px; }
+}
