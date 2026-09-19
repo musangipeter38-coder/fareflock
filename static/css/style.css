@@ -41,16 +41,6 @@ body {
     -webkit-text-fill-color: transparent;
     text-decoration: none;
     white-space: nowrap;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.logo-img {
-    height: 32px;
-    width: 32px;
-    border-radius: 6px;
-    object-fit: cover;
 }
 
 nav {
@@ -196,30 +186,6 @@ nav a:hover { color: var(--electric-blue); }
 }
 .tip-card h3 { color: var(--electric-blue); margin-bottom: 10px; font-size: 17px; }
 .tip-card p { color: var(--text-muted); line-height: 1.6; font-size: 14px; }
-
-.category-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 16px;
-}
-.category-card {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    background: var(--bg-panel);
-    border: 1px solid var(--border-glow);
-    border-radius: 12px;
-    padding: 20px;
-    text-decoration: none;
-    color: var(--text-light);
-    transition: border-color 0.2s, transform 0.2s;
-}
-.category-card:hover {
-    border-color: var(--electric-blue);
-    transform: translateY(-2px);
-}
-.category-icon { font-size: 26px; flex-shrink: 0; }
-.category-name { font-weight: 600; font-size: 15px; }
 
 .blog-list { max-width: 900px; margin: 40px auto; padding: 0 20px; }
 .category-tag {
@@ -430,6 +396,100 @@ button, .btn-primary {
     transform: translateY(-2px);
 }
 
+.globe-hero { position: relative; overflow: hidden; }
+
+.globe-decor {
+    position: relative;
+    width: 90px;
+    height: 90px;
+    margin: 0 auto 20px;
+}
+.globe-core {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 40px;
+    animation: spin-globe 20s linear infinite;
+}
+@keyframes spin-globe {
+    from { transform: translate(-50%, -50%) rotate(0deg); }
+    to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+.plane-orbit {
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 1px; height: 1px;
+}
+.plane-orbit .plane {
+    position: absolute;
+    font-size: 16px;
+    display: block;
+}
+.orbit-1 { animation: orbit-cw 6s linear infinite; }
+.orbit-1 .plane { top: -70px; left: 0; }
+.orbit-2 { animation: orbit-ccw 9s linear infinite; }
+.orbit-2 .plane { top: -55px; left: 0; }
+.orbit-3 { animation: orbit-cw 13s linear infinite; }
+.orbit-3 .plane { top: -80px; left: 0; }
+
+@keyframes orbit-cw {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+@keyframes orbit-ccw {
+    from { transform: rotate(360deg); }
+    to { transform: rotate(0deg); }
+}
+
+.category-slider {
+    display: flex;
+    gap: 16px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    padding-bottom: 10px;
+    -webkit-overflow-scrolling: touch;
+}
+.category-slider::-webkit-scrollbar { height: 6px; }
+.category-slider::-webkit-scrollbar-thumb { background: var(--border-glow); border-radius: 10px; }
+
+.category-slide {
+    flex: 0 0 auto;
+    scroll-snap-align: start;
+    width: 220px;
+    height: 150px;
+    border-radius: 14px;
+    background-color: var(--bg-panel);
+    background-size: cover;
+    background-position: center;
+    border: 1px solid var(--border-glow);
+    text-decoration: none;
+    color: var(--text-light);
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s, border-color 0.2s;
+}
+.category-slide:hover { transform: translateY(-3px); border-color: var(--electric-blue); }
+
+.category-slide-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 16px;
+    background: linear-gradient(to top, rgba(10,14,26,0.9), rgba(10,14,26,0.1));
+}
+.category-slide-overlay .category-icon { font-size: 26px; margin-bottom: 6px; }
+.category-slide-overlay .category-name { font-weight: 700; font-size: 15px; }
+
+.slider-hint {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 12px;
+    margin-top: 4px;
+}
+
 @media (max-width: 640px) {
     .featured-post { grid-template-columns: 1fr; }
     .featured-post-visual { min-height: 140px; font-size: 48px; }
@@ -445,4 +505,6 @@ button, .btn-primary {
     .admin-table th, .admin-table td { padding: 10px 12px; font-size: 13px; }
     .chat-widget { width: calc(100vw - 32px); right: 16px; }
     .whatsapp-fab { width: 46px; height: 46px; }
+    .globe-decor { width: 70px; height: 70px; }
+    .globe-core { font-size: 32px; }
 }

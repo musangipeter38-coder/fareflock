@@ -12,19 +12,29 @@
     {% endfor %}
 {% endif %}
 
-<section class="page-hero">
+<section class="page-hero globe-hero">
+    <div class="globe-decor" aria-hidden="true">
+        <div class="globe-core">🌍</div>
+        <div class="plane-orbit orbit-1"><span class="plane">✈️</span></div>
+        <div class="plane-orbit orbit-2"><span class="plane">✈️</span></div>
+        <div class="plane-orbit orbit-3"><span class="plane">✈️</span></div>
+    </div>
     <h1>Explore All Services</h1>
     <p>Real deals and honest guides — flights, hotels, tours, and more, all in one place.</p>
 </section>
 
 <section class="tips-grid-section">
-    <div class="category-grid">
+    <div class="category-slider">
         {% for cat in SERVICE_CATEGORIES %}
-        <a href="{{ category_url(cat) }}" class="category-card">
-            <span class="category-icon">{{ cat.icon }}</span>
-            <span class="category-name">{{ cat.name }}</span>
+        {% set bg = cat_images.get(cat.slug) %}
+        <a href="{{ category_url(cat) }}" class="category-slide" style="{% if bg %}background-image:url('{{ bg }}');{% endif %}">
+            <div class="category-slide-overlay">
+                <span class="category-icon">{{ cat.icon }}</span>
+                <span class="category-name">{{ cat.name }}</span>
+            </div>
         </a>
         {% endfor %}
     </div>
+    <p class="slider-hint">← swipe to explore →</p>
 </section>
 {% endblock %}

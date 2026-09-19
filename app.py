@@ -6,7 +6,7 @@ from flask_login import LoginManager, login_user, logout_user, login_required
 from flask_bcrypt import Bcrypt
 from dotenv import load_dotenv
 from sqlalchemy import text
-from database import db, Admin, Post, Category, AffiliateLink, ClickLog, Tip, ChatMessage
+from database import db, Admin, Post, Category, AffiliateLink, ClickLog, Tip, ChatMessage, CategoryImage
 
 load_dotenv()
 
@@ -63,6 +63,11 @@ def category_url(cat):
     if cat['route']:
         return url_for(cat['route'])
     return url_for('category_page', slug=cat['slug'])
+
+
+def get_category_images():
+    rows = CategoryImage.query.all()
+    return {r.slug: r.image_url for r in rows if r.image_url}
 
 
 def asset_version(filename):
@@ -160,8 +165,9 @@ def add_cache_headers(response):
 @app.route('/')
 def home():
     widgets = get_widgets('homepage')
+    cat_images = get_category_images()
     return render_template(
-        'index.html', widgets=widgets,
+        'index.html', widgets=widgets, cat_images=cat_images,
         meta_title='Fareflock — Explore All Travel Services',
         meta_description='Flights, hotels, tours, insurance, and more — real deals and honest guides, all in one place.'
     )
@@ -546,6 +552,28 @@ def delete_message(msg_id):
     db.session.commit()
     flash('Deleted.')
     return redirect(url_for('admin_messages'))
+
+
+# ---------- ADMIN: CATEGORY BACKGROUND IMAGES ----------
+
+@app.route('/admin/category-images', methods=['GET', 'POST'])
+@login_required
+def admin_category_images():
+    if request.method == 'POST':
+        for cat in SERVICE_CATEGORIES:
+            url_value = request.form.get(cat['slug'], '').strip()
+            row = CategoryImage.query.filter_by(slug=cat['slug']).first()
+            if row:
+                row.image_url = url_value
+            else:
+                row = CategoryImage(slug=cat['slug'], image_url=url_value)
+                db.session.add(row)
+        db.session.commit()
+        flash('Category images updated.')
+        return redirect(url_for('admin_category_images'))
+
+    current_images = get_category_images()
+    return render_template('admin/category_images.html', categories=SERVICE_CATEGORIES, current_images=current_images)
 
 
 # ---------- DATABASE SETUP ----------
