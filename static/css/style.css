@@ -41,6 +41,16 @@ body {
     -webkit-text-fill-color: transparent;
     text-decoration: none;
     white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.logo-img {
+    height: 32px;
+    width: 32px;
+    border-radius: 6px;
+    object-fit: cover;
 }
 
 nav {

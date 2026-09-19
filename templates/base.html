@@ -29,7 +29,10 @@
 </head>
 <body>
     <header class="site-header">
-        <a href="{{ url_for('home') }}" class="logo">Fareflock</a>
+        <a href="{{ url_for('home') }}" class="logo">
+            <img src="{{ url_for('static', filename='img/logo.jpeg') }}" alt="Fareflock logo" class="logo-img">
+            Fareflock
+        </a>
         <nav>
             <a href="{{ url_for('home') }}">Explore</a>
             <a href="{{ url_for('blog') }}">Blog</a>
