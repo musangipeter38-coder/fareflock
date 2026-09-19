@@ -27,7 +27,7 @@ SITE_URL = os.environ.get('SITE_URL', 'https://fareflock.com')
 WHATSAPP_NUMBER = os.environ.get('WHATSAPP_NUMBER', '')
 
 SOCIAL_LINKS = {
-    'facebook': '',
+    'facebook': 'https://facebook.com/fareflock',
     'instagram': 'https://instagram.com/fareflock_01',
     'youtube': 'https://youtube.com/@fareflock',
     'tiktok': 'https://tiktok.com/@fareflock.com',
