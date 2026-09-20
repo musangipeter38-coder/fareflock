@@ -34,12 +34,14 @@
     <div class="category-slider">
         {% for cat in SERVICE_CATEGORIES %}
         {% set bg = cat_images.get(cat.slug) %}
-        <a href="{{ category_url(cat) }}" class="category-slide" style="{% if bg %}background-image:url('{{ bg }}');{% endif %}">
+        <div class="category-slide" style="{% if bg %}background-image:url('{{ bg }}');{% endif %}">
+            <a href="{{ category_url(cat) }}" class="category-slide-link" aria-label="{{ cat.name }}"></a>
             <div class="category-slide-overlay">
                 <span class="category-icon">{{ cat.icon }}</span>
                 <span class="category-name">{{ cat.name }}</span>
             </div>
-        </a>
+            <a href="{{ category_url(cat) }}" class="category-book-btn">Book</a>
+        </div>
         {% endfor %}
     </div>
     <p class="slider-hint">← swipe to explore →</p>
