@@ -637,17 +637,21 @@ def admin_deal():
 # ---------- DATABASE SETUP ----------
 with app.app_context():
     db.create_all()
-    try:
-        db.session.execute(text('ALTER TABLE affiliate_link ADD COLUMN IF NOT EXISTS height INTEGER DEFAULT 500'))
-        db.session.commit()
-    except Exception:
-        db.session.rollback()
-    try:
-        db.session.execute(text('ALTER TABLE category_image ADD COLUMN IF NOT EXISTS image_data BYTEA'))
-        db.session.execute(text('ALTER TABLE category_image ADD COLUMN IF NOT EXISTS mimetype VARCHAR(50)'))
-        db.session.commit()
-    except Exception:
-        db.session.rollback()
+
+    # Each ALTER runs and commits independently, so one failing (e.g. a
+    # column that already exists) never rolls back the others.
+    _migrations = [
+        'ALTER TABLE affiliate_link ADD COLUMN IF NOT EXISTS height INTEGER DEFAULT 500',
+        'ALTER TABLE category_image ADD COLUMN IF NOT EXISTS image_data BYTEA',
+        'ALTER TABLE category_image ADD COLUMN IF NOT EXISTS mimetype VARCHAR(50)',
+        'ALTER TABLE category_image ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP',
+    ]
+    for statement in _migrations:
+        try:
+            db.session.execute(text(statement))
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
 
 if __name__ == '__main__':
     app.run(debug=True)
