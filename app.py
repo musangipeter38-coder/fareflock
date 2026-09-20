@@ -15,6 +15,7 @@ app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-change-later
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///fareflock.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
+app.config['MAX_CONTENT_LENGTH'] = 8 * 1024 * 1024  # 8MB upload limit, generous for a button image
 
 db.init_app(app)
 bcrypt = Bcrypt(app)
@@ -66,8 +67,19 @@ def category_url(cat):
 
 
 def get_category_images():
+    """
+    Returns {slug: display_url} for every category that has an image set.
+    Prefers an uploaded/stored image (served from our own route) over the
+    legacy external image_url field, if both somehow exist.
+    """
     rows = CategoryImage.query.all()
-    return {r.slug: r.image_url for r in rows if r.image_url}
+    images = {}
+    for r in rows:
+        if r.image_data:
+            images[r.slug] = url_for('category_image_file', slug=r.slug)
+        elif r.image_url:
+            images[r.slug] = r.image_url
+    return images
 
 
 def get_active_deal():
@@ -264,6 +276,18 @@ def about():
         meta_title='About — Fareflock',
         meta_description='Fareflock is a global travel deals and guides site, built with real depth instead of recycled listicles.'
     )
+
+
+# ---------- CATEGORY BUTTON IMAGES (served from the database) ----------
+
+@app.route('/category-image/<slug>')
+def category_image_file(slug):
+    row = CategoryImage.query.filter_by(slug=slug).first()
+    if not row or not row.image_data:
+        abort(404)
+    response = Response(row.image_data, mimetype=row.mimetype or 'image/jpeg')
+    response.headers['Cache-Control'] = 'public, max-age=86400'
+    return response
 
 
 # ---------- CHAT / CONTACT ----------
@@ -559,20 +583,24 @@ def delete_message(msg_id):
     return redirect(url_for('admin_messages'))
 
 
-# ---------- ADMIN: CATEGORY BACKGROUND IMAGES ----------
+# ---------- ADMIN: CATEGORY BUTTON IMAGES ----------
 
 @app.route('/admin/category-images', methods=['GET', 'POST'])
 @login_required
 def admin_category_images():
     if request.method == 'POST':
         for cat in SERVICE_CATEGORIES:
-            url_value = request.form.get(cat['slug'], '').strip()
-            row = CategoryImage.query.filter_by(slug=cat['slug']).first()
-            if row:
-                row.image_url = url_value
-            else:
-                row = CategoryImage(slug=cat['slug'], image_url=url_value)
-                db.session.add(row)
+            file = request.files.get(cat['slug'])
+            if file and file.filename:
+                data = file.read()
+                mimetype = file.mimetype or 'image/jpeg'
+                row = CategoryImage.query.filter_by(slug=cat['slug']).first()
+                if row:
+                    row.image_data = data
+                    row.mimetype = mimetype
+                else:
+                    row = CategoryImage(slug=cat['slug'], image_data=data, mimetype=mimetype)
+                    db.session.add(row)
         db.session.commit()
         flash('Category images updated.')
         return redirect(url_for('admin_category_images'))
@@ -611,6 +639,12 @@ with app.app_context():
     db.create_all()
     try:
         db.session.execute(text('ALTER TABLE affiliate_link ADD COLUMN IF NOT EXISTS height INTEGER DEFAULT 500'))
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+    try:
+        db.session.execute(text('ALTER TABLE category_image ADD COLUMN IF NOT EXISTS image_data BYTEA'))
+        db.session.execute(text('ALTER TABLE category_image ADD COLUMN IF NOT EXISTS mimetype VARCHAR(50)'))
         db.session.commit()
     except Exception:
         db.session.rollback()

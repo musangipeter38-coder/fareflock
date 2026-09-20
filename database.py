@@ -86,7 +86,14 @@ class ChatMessage(db.Model):
 class CategoryImage(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     slug = db.Column(db.String(50), unique=True, nullable=False)
+    # The actual uploaded picture, stored directly in the database so it
+    # survives Render redeploys/restarts (the local disk does not).
+    image_data = db.Column(db.LargeBinary)
+    mimetype = db.Column(db.String(50))
+    # Optional fallback: a plain external URL, kept for backward compatibility
+    # if you ever want to link an already-hosted image instead of uploading one.
     image_url = db.Column(db.String(500))
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 
 class DealBanner(db.Model):
