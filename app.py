@@ -634,24 +634,35 @@ def admin_deal():
     return render_template('admin/deal_form.html', deal=deal)
 
 
+from sqlalchemy import inspect
+
 # ---------- DATABASE SETUP ----------
 with app.app_context():
     db.create_all()
 
-    # Each ALTER runs and commits independently, so one failing (e.g. a
-    # column that already exists) never rolls back the others.
-    _migrations = [
-        'ALTER TABLE affiliate_link ADD COLUMN IF NOT EXISTS height INTEGER DEFAULT 500',
-        'ALTER TABLE category_image ADD COLUMN IF NOT EXISTS image_data BYTEA',
-        'ALTER TABLE category_image ADD COLUMN IF NOT EXISTS mimetype VARCHAR(50)',
-        'ALTER TABLE category_image ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP',
-    ]
-    for statement in _migrations:
-        try:
-            db.session.execute(text(statement))
-            db.session.commit()
-        except Exception:
-            db.session.rollback()
+    _inspector = inspect(db.engine)
+    _dialect = db.engine.dialect.name  # 'sqlite', 'postgresql', etc.
+    _blob_type = 'BYTEA' if _dialect == 'postgresql' else 'BLOB'
+
+    def _add_column_if_missing(table, column_name, ddl_type):
+        """
+        Checks the real database schema (works the same on SQLite, Postgres,
+        etc.) rather than relying on 'IF NOT EXISTS', which SQLite's
+        ALTER TABLE ADD COLUMN does not support and was silently failing on
+        every deploy.
+        """
+        existing = [c['name'] for c in _inspector.get_columns(table)]
+        if column_name not in existing:
+            try:
+                db.session.execute(text(f'ALTER TABLE {table} ADD COLUMN {column_name} {ddl_type}'))
+                db.session.commit()
+            except Exception:
+                db.session.rollback()
+
+    _add_column_if_missing('affiliate_link', 'height', 'INTEGER DEFAULT 500')
+    _add_column_if_missing('category_image', 'image_data', _blob_type)
+    _add_column_if_missing('category_image', 'mimetype', 'VARCHAR(50)')
+    _add_column_if_missing('category_image', 'updated_at', 'TIMESTAMP')
 
 if __name__ == '__main__':
     app.run(debug=True)
