@@ -87,3 +87,11 @@ class CategoryImage(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     slug = db.Column(db.String(50), unique=True, nullable=False)
     image_url = db.Column(db.String(500))
+
+
+class DealBanner(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    message = db.Column(db.String(300), nullable=False)
+    link_url = db.Column(db.String(500))
+    active = db.Column(db.Boolean, default=True)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

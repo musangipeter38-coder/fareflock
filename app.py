@@ -6,7 +6,7 @@ from flask_login import LoginManager, login_user, logout_user, login_required
 from flask_bcrypt import Bcrypt
 from dotenv import load_dotenv
 from sqlalchemy import text
-from database import db, Admin, Post, Category, AffiliateLink, ClickLog, Tip, ChatMessage, CategoryImage
+from database import db, Admin, Post, Category, AffiliateLink, ClickLog, Tip, ChatMessage, CategoryImage, DealBanner
 
 load_dotenv()
 
@@ -68,6 +68,10 @@ def category_url(cat):
 def get_category_images():
     rows = CategoryImage.query.all()
     return {r.slug: r.image_url for r in rows if r.image_url}
+
+
+def get_active_deal():
+    return DealBanner.query.filter_by(active=True).order_by(DealBanner.updated_at.desc()).first()
 
 
 def asset_version(filename):
@@ -166,8 +170,9 @@ def add_cache_headers(response):
 def home():
     widgets = get_widgets('homepage')
     cat_images = get_category_images()
+    deal = get_active_deal()
     return render_template(
-        'index.html', widgets=widgets, cat_images=cat_images,
+        'index.html', widgets=widgets, cat_images=cat_images, deal=deal,
         meta_title='Fareflock — Explore All Travel Services',
         meta_description='Flights, hotels, tours, insurance, and more — real deals and honest guides, all in one place.'
     )
@@ -574,6 +579,31 @@ def admin_category_images():
 
     current_images = get_category_images()
     return render_template('admin/category_images.html', categories=SERVICE_CATEGORIES, current_images=current_images)
+
+
+# ---------- ADMIN: DEAL OF THE DAY ----------
+
+@app.route('/admin/deal', methods=['GET', 'POST'])
+@login_required
+def admin_deal():
+    deal = DealBanner.query.first()
+    if request.method == 'POST':
+        message = request.form.get('message', '').strip()
+        link_url = request.form.get('link_url', '').strip()
+        active = True if request.form.get('active') == 'on' else False
+
+        if deal:
+            deal.message = message
+            deal.link_url = link_url
+            deal.active = active
+        else:
+            deal = DealBanner(message=message, link_url=link_url, active=active)
+            db.session.add(deal)
+        db.session.commit()
+        flash('Deal banner updated.')
+        return redirect(url_for('admin_deal'))
+
+    return render_template('admin/deal_form.html', deal=deal)
 
 
 # ---------- DATABASE SETUP ----------

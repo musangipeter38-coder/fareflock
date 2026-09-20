@@ -2,6 +2,13 @@
 {% block title %}Fareflock — Explore All Travel Services{% endblock %}
 {% block content %}
 
+{% if deal and deal.active %}
+<a href="{{ deal.link_url or '#' }}" class="deal-banner">
+    <span class="deal-badge">Deal of the Day</span>
+    <span class="deal-message">{{ deal.message }}</span>
+</a>
+{% endif %}
+
 {% if widgets %}
     {% for widget in widgets %}
     <section class="widget-section">

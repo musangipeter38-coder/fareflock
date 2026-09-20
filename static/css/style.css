@@ -538,3 +538,24 @@ button:hover, .btn-primary:hover { background: var(--coral-light); }
     .globe-core { font-size: 32px; }
     .logo-img { width: 30px; height: 30px; }
 }
+.deal-banner {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 24px;
+    background: linear-gradient(90deg, var(--electric-purple), var(--electric-pink));
+    color: #fff;
+    text-decoration: none;
+    flex-wrap: wrap;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 14px;
+}
+.deal-badge {
+    background: rgba(255,255,255,0.25);
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
