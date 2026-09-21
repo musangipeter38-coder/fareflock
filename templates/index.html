@@ -20,6 +20,13 @@
 {% endif %}
 
 <section class="page-hero globe-hero">
+    <div class="floating-planes" aria-hidden="true">
+        <span class="floating-plane fp-1">✈️</span>
+        <span class="floating-plane fp-2">✈️</span>
+        <span class="floating-plane fp-3">✈️</span>
+        <span class="floating-plane fp-4">✈️</span>
+    </div>
+
     <div class="globe-decor" aria-hidden="true">
         <div class="globe-core">🌍</div>
         <div class="plane-orbit orbit-1"><span class="plane">✈️</span></div>
@@ -31,19 +38,18 @@
 </section>
 
 <section class="tips-grid-section">
-    <div class="category-slider">
+    <div class="category-grid-fixed">
         {% for cat in SERVICE_CATEGORIES %}
         {% set bg = cat_images.get(cat.slug) %}
         <div class="category-slide" style="{% if bg %}background-image:url('{{ bg }}');{% endif %}">
             <a href="{{ category_url(cat) }}" class="category-slide-link" aria-label="{{ cat.name }}"></a>
             <div class="category-slide-overlay">
                 <span class="category-icon">{{ cat.icon }}</span>
-                <span class="category-name">{{ cat.name }}</span>
+                <span class="category-name glow-text">{{ cat.name }}</span>
             </div>
-            <a href="{{ category_url(cat) }}" class="category-book-btn">Book</a>
+            <a href="{{ category_url(cat) }}" class="category-book-btn">Book Now</a>
         </div>
         {% endfor %}
     </div>
-    <p class="slider-hint">← swipe to explore →</p>
 </section>
 {% endblock %}

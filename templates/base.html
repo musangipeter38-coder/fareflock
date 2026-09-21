@@ -38,7 +38,17 @@
             Fareflock
         </a>
         <nav>
-            <a href="{{ url_for('home') }}">Explore</a>
+            <div class="nav-dropdown">
+                <button type="button" class="nav-dropdown-toggle" aria-expanded="false" aria-controls="exploreMenu">
+                    Explore <span class="caret">▾</span>
+                </button>
+                <div class="nav-dropdown-menu" id="exploreMenu">
+                    <a href="{{ url_for('home') }}">All Services</a>
+                    {% for cat in SERVICE_CATEGORIES %}
+                    <a href="{{ category_url(cat) }}">{{ cat.icon }} {{ cat.name }}</a>
+                    {% endfor %}
+                </div>
+            </div>
             <a href="{{ url_for('blog') }}">Blog</a>
             <a href="{{ url_for('about') }}">About</a>
         </nav>
@@ -116,6 +126,32 @@
                 var link = e.target.closest('a[href^="/"]');
                 if (link) prefetch(link.href);
             }, { passive: true });
+        })();
+
+        (function() {
+            var wrap = document.querySelector('.nav-dropdown');
+            var toggle = document.querySelector('.nav-dropdown-toggle');
+            if (!wrap || !toggle) return;
+
+            function closeMenu() {
+                wrap.classList.remove('open');
+                toggle.setAttribute('aria-expanded', 'false');
+            }
+            function toggleMenu() {
+                var isOpen = wrap.classList.toggle('open');
+                toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+            }
+
+            toggle.addEventListener('click', function(e) {
+                e.stopPropagation();
+                toggleMenu();
+            });
+            document.addEventListener('click', function(e) {
+                if (!wrap.contains(e.target)) closeMenu();
+            });
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') closeMenu();
+            });
         })();
     </script>
 </body>
