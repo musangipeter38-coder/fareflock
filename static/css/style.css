@@ -679,3 +679,22 @@ button:hover, .btn-primary:hover { background: var(--coral-light); }
     background: var(--bg-dark);
     color: var(--coral-light);
 }
+/* ---------- GLOBAL GLOW TEXT ---------- */
+body {
+    text-shadow:
+        0 0 4px rgba(0, 200, 255, 0.55),
+        0 0 10px rgba(0, 150, 255, 0.35);
+}
+
+/* Cancel the glow on light "paper" surfaces — dark text on cream doesn't glow well */
+.post-card,
+.tip-card,
+.featured-post-body,
+.blog-card-body,
+.login-form,
+.post-form,
+.admin-table,
+.widget-placeholder,
+button, .btn-primary, .btn-secondary {
+    text-shadow: none;
+}
