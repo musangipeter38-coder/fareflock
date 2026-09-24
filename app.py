@@ -658,6 +658,11 @@ with app.app_context():
         db.session.commit()
     except Exception:
         db.session.rollback()
+    try:
+        db.session.execute(text('ALTER TABLE category_image ALTER COLUMN image_url TYPE TEXT'))
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
 
 if __name__ == '__main__':
     app.run(debug=True)
