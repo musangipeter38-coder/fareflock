@@ -582,7 +582,7 @@ def delete_message(msg_id):
 # ---------- ADMIN: CATEGORY BACKGROUND IMAGES ----------
 
 ALLOWED_IMAGE_TYPES = {'image/png', 'image/jpeg', 'image/webp', 'image/gif'}
-MAX_IMAGE_BYTES = 2 * 1024 * 1024  # 2MB
+MAX_IMAGE_BYTES = 10 * 1024 * 1024  # INCREASED LIMIT TO 10MB
 
 @app.route('/admin/category-images', methods=['GET', 'POST'])
 @login_required
@@ -591,7 +591,7 @@ def admin_category_images():
         for cat in SERVICE_CATEGORIES:
             file = request.files.get(cat['slug'])
             if not file or not file.filename:
-                continue  # nothing uploaded for this category — leave it untouched
+                continue
 
             if file.mimetype not in ALLOWED_IMAGE_TYPES:
                 flash(f"Skipped {cat['name']}: unsupported file type.")
@@ -599,7 +599,7 @@ def admin_category_images():
 
             data = file.read()
             if len(data) > MAX_IMAGE_BYTES:
-                flash(f"Skipped {cat['name']}: image too large (max 2MB).")
+                flash(f"Skipped {cat['name']}: image too large (max 10MB).")
                 continue
 
             encoded = base64.b64encode(data).decode('utf-8')
