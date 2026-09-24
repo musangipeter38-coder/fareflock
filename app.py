@@ -1,5 +1,6 @@
 import os
 import re
+import base64
 from datetime import datetime
 from flask import Flask, render_template, redirect, url_for, request, flash, abort, Response, jsonify
 from flask_login import LoginManager, login_user, logout_user, login_required
@@ -580,18 +581,37 @@ def delete_message(msg_id):
 
 # ---------- ADMIN: CATEGORY BACKGROUND IMAGES ----------
 
+ALLOWED_IMAGE_TYPES = {'image/png', 'image/jpeg', 'image/webp', 'image/gif'}
+MAX_IMAGE_BYTES = 2 * 1024 * 1024  # 2MB
+
 @app.route('/admin/category-images', methods=['GET', 'POST'])
 @login_required
 def admin_category_images():
     if request.method == 'POST':
         for cat in SERVICE_CATEGORIES:
-            url_value = request.form.get(cat['slug'], '').strip()
+            file = request.files.get(cat['slug'])
+            if not file or not file.filename:
+                continue  # nothing uploaded for this category — leave it untouched
+
+            if file.mimetype not in ALLOWED_IMAGE_TYPES:
+                flash(f"Skipped {cat['name']}: unsupported file type.")
+                continue
+
+            data = file.read()
+            if len(data) > MAX_IMAGE_BYTES:
+                flash(f"Skipped {cat['name']}: image too large (max 2MB).")
+                continue
+
+            encoded = base64.b64encode(data).decode('utf-8')
+            data_uri = f"data:{file.mimetype};base64,{encoded}"
+
             row = CategoryImage.query.filter_by(slug=cat['slug']).first()
             if row:
-                row.image_url = url_value
+                row.image_url = data_uri
             else:
-                row = CategoryImage(slug=cat['slug'], image_url=url_value)
+                row = CategoryImage(slug=cat['slug'], image_url=data_uri)
                 db.session.add(row)
+
         db.session.commit()
         flash('Category images updated.')
         return redirect(url_for('admin_category_images'))
