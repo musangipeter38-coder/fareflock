@@ -42,6 +42,11 @@ SERVICE_CATEGORIES = [
     {'slug': 'sim-cards', 'name': 'SIM Cards', 'icon': '📶', 'placement': 'category_sim_cards', 'route': None},
 ]
 
+# Every placement key available for widgets to be assigned to, with a readable label.
+PLACEMENT_OPTIONS = [{'key': 'homepage', 'label': 'Homepage'}] + [
+    {'key': cat['placement'], 'label': f"{cat['icon']} {cat['name']}"} for cat in SERVICE_CATEGORIES
+]
+
 BLOG_VISUALS = [
     {'match': 'flight', 'icon': '✈️', 'gradient': 'grad-blue'},
     {'match': 'hotel', 'icon': '🛏️', 'gradient': 'grad-purple'},
@@ -118,10 +123,17 @@ def slugify(text_in):
     return text_in.strip('-')
 
 
-def get_widgets(placement):
-    return AffiliateLink.query.filter_by(
-        placement=placement, link_type='widget', active=True
+def get_widgets(placement_key):
+    """Return active widgets whose placement list includes placement_key."""
+    all_widgets = AffiliateLink.query.filter_by(
+        link_type='widget', active=True
     ).order_by(AffiliateLink.created_at.asc()).all()
+    result = []
+    for w in all_widgets:
+        keys = [p.strip() for p in (w.placement or '').split(',') if p.strip()]
+        if placement_key in keys:
+            result.append(w)
+    return result
 
 
 def get_tips(page):
@@ -434,10 +446,11 @@ def admin_links():
 @login_required
 def new_link():
     if request.method == 'POST':
+        placements = request.form.getlist('placements')
         link = AffiliateLink(
             name=request.form.get('name'),
             link_type=request.form.get('link_type'),
-            placement=request.form.get('placement') or None,
+            placement=','.join(placements),
             content=request.form.get('content'),
             description=request.form.get('description'),
             active=True if request.form.get('active') == 'on' else False,
@@ -447,7 +460,7 @@ def new_link():
         db.session.commit()
         flash('Affiliate link/widget created.')
         return redirect(url_for('admin_links'))
-    return render_template('admin/link_form.html', link=None, categories=SERVICE_CATEGORIES)
+    return render_template('admin/link_form.html', link=None, placement_options=PLACEMENT_OPTIONS)
 
 
 @app.route('/admin/links/edit/<int:link_id>', methods=['GET', 'POST'])
@@ -455,9 +468,10 @@ def new_link():
 def edit_link(link_id):
     link = AffiliateLink.query.get_or_404(link_id)
     if request.method == 'POST':
+        placements = request.form.getlist('placements')
         link.name = request.form.get('name')
         link.link_type = request.form.get('link_type')
-        link.placement = request.form.get('placement') or None
+        link.placement = ','.join(placements)
         link.content = request.form.get('content')
         link.description = request.form.get('description')
         link.active = True if request.form.get('active') == 'on' else False
@@ -465,7 +479,9 @@ def edit_link(link_id):
         db.session.commit()
         flash('Updated.')
         return redirect(url_for('admin_links'))
-    return render_template('admin/link_form.html', link=link, categories=SERVICE_CATEGORIES)
+
+    selected = [p.strip() for p in (link.placement or '').split(',') if p.strip()]
+    return render_template('admin/link_form.html', link=link, placement_options=PLACEMENT_OPTIONS, selected_placements=selected)
 
 
 @app.route('/admin/links/delete/<int:link_id>')
@@ -611,6 +627,11 @@ with app.app_context():
     db.create_all()
     try:
         db.session.execute(text('ALTER TABLE affiliate_link ADD COLUMN IF NOT EXISTS height INTEGER DEFAULT 500'))
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+    try:
+        db.session.execute(text('ALTER TABLE affiliate_link ALTER COLUMN placement TYPE TEXT'))
         db.session.commit()
     except Exception:
         db.session.rollback()

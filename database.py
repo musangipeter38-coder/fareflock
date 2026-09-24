@@ -48,7 +48,7 @@ class AffiliateLink(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     link_type = db.Column(db.String(20), nullable=False)
-    placement = db.Column(db.String(50))
+    placement = db.Column(db.Text)  # comma-separated list of placements, e.g. "homepage,flights_page,category_tours"
     content = db.Column(db.Text, nullable=False)
     description = db.Column(db.String(300))
     active = db.Column(db.Boolean, default=True)

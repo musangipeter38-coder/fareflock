@@ -9,18 +9,17 @@
 
         <label>Type</label>
         <select name="link_type" required>
-            <option value="widget" {% if link and link.link_type == 'widget' %}selected{% endif %}>Widget (embed script — auto-placed on a page)</option>
-            <option value="url" {% if link and link.link_type == 'url' %}selected{% endif %}>URL (plain affiliate link — use inside blog posts)</option>
+            <option value="widget" {% if link and link.link_type == 'widget' %}selected{% endif %}>Widget (embed script)</option>
+            <option value="url" {% if link and link.link_type == 'url' %}selected{% endif %}>URL (plain affiliate link)</option>
         </select>
 
-        <label>Placement (widgets only — where it shows automatically)</label>
-        <select name="placement">
-            <option value="">— Not applicable (for URL type) —</option>
-            <option value="homepage" {% if link and link.placement == 'homepage' %}selected{% endif %}>Homepage</option>
-            {% for cat in categories %}
-            <option value="{{ cat.placement }}" {% if link and link.placement == cat.placement %}selected{% endif %}>{{ cat.icon }} {{ cat.name }}</option>
-            {% endfor %}
-        </select>
+        <label>Show on (check every page this should appear on — widgets only)</label>
+        {% for opt in placement_options %}
+        <label class="checkbox-label" style="margin-top: 8px;">
+            <input type="checkbox" name="placements" value="{{ opt.key }}" {% if selected_placements and opt.key in selected_placements %}checked{% endif %}>
+            {{ opt.label }}
+        </label>
+        {% endfor %}
 
         <label>Widget Height (pixels)</label>
         <input type="number" name="height" value="{{ link.height if link else 500 }}" min="200" max="1200">
