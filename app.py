@@ -487,10 +487,13 @@ def edit_link(link_id):
 @app.route('/admin/links/delete/<int:link_id>')
 @login_required
 def delete_link(link_id):
-    link = AffiliateLink.query.get_or_404(link_id)
-    db.session.delete(link)
-    db.session.commit()
-    flash('Deleted.')
+    link = AffiliateLink.query.get(link_id)
+    if link:
+        db.session.delete(link)
+        db.session.commit()
+        flash('Deleted.')
+    else:
+        flash('That link was already deleted.')
     return redirect(url_for('admin_links'))
 
 
