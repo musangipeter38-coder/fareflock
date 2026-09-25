@@ -31,8 +31,10 @@ login_manager.login_view = 'login'
 
 SITE_URL = os.environ.get('SITE_URL', 'https://fareflock.com')
 WHATSAPP_NUMBER = os.environ.get('WHATSAPP_NUMBER', '+14155238886')
-TRAVELPAYOUTS_TOKEN = os.environ.get('TRAVELPAYOUTS_TOKEN', '')
-TRAVELPAYOUTS_MARKER = os.environ.get('TRAVELPAYOUTS_MARKER', '581331')
+
+# UPDATED: Checks both TRAVELPAYOUTS_API_TOKEN (Render key) and TRAVELPAYOUTS_TOKEN
+TRAVELPAYOUTS_TOKEN = os.environ.get('TRAVELPAYOUTS_API_TOKEN') or os.environ.get('TRAVELPAYOUTS_TOKEN', '')
+TRAVELPAYOUTS_MARKER = os.environ.get('TRAVELPAYOUTS_MARKER', '775557')
 
 # Global Social Links dictionary to avoid Jinja UndefinedError in base.html
 SOCIAL_LINKS = {
@@ -56,7 +58,9 @@ CITY_TO_IATA = {
     'DUBAI': 'DXB',
     'UAE': 'DXB',
     'UNITED KINGDOM': 'LHR',
+    'UNITED KINGDON': 'LHR',  # Auto-fix typo
     'UK': 'LHR',
+    'ENGLAND': 'LHR',
     'LONDON': 'LHR',
     'LONDON HEATHROW': 'LHR',
     'LONDON GATWICK': 'LGW',
@@ -219,7 +223,7 @@ def add_cache_headers(response):
 @app.route('/api/search/flights', methods=['GET'])
 def search_flights():
     raw_origin = request.args.get('origin', 'NBO')
-    raw_destination = request.args.get('destination', 'DXB')
+    raw_destination = request.args.get('destination', 'LHR')
     currency = request.args.get('currency', 'USD').upper().strip()
 
     origin = resolve_iata(raw_origin)
@@ -241,8 +245,9 @@ def search_flights():
         res = requests.get(url, params=params, timeout=10)
         data = res.json()
         
-        raw_results = data.get('data', []) if data.get('success', False) else []
+        raw_results = data.get('data', []) if (data and data.get('success', False)) else []
         
+        # Fallback query if direct route cache is empty
         if not raw_results:
             fallback_params = {
                 'origin': origin,
@@ -255,7 +260,7 @@ def search_flights():
             }
             res = requests.get(url, params=fallback_params, timeout=10)
             data = res.json()
-            raw_results = data.get('data', []) if data.get('success', False) else []
+            raw_results = data.get('data', []) if (data and data.get('success', False)) else []
 
         sanitized = []
         for flight in raw_results:
