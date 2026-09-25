@@ -34,6 +34,20 @@ WHATSAPP_NUMBER = os.environ.get('WHATSAPP_NUMBER', '+14155238886')
 TRAVELPAYOUTS_TOKEN = os.environ.get('TRAVELPAYOUTS_TOKEN', '')
 TRAVELPAYOUTS_MARKER = os.environ.get('TRAVELPAYOUTS_MARKER', '581331')
 
+# Global Social Links dictionary to avoid Jinja UndefinedError in base.html
+SOCIAL_LINKS = {
+    'facebook': os.environ.get('FACEBOOK_URL', 'https://facebook.com/fareflock'),
+    'twitter': os.environ.get('TWITTER_URL', 'https://x.com/fareflock'),
+    'instagram': os.environ.get('INSTAGRAM_URL', 'https://instagram.com/fareflock')
+}
+
+
+@app.context_processor
+def inject_global_vars():
+    """Inject variables into all Jinja templates globally across all routes."""
+    return dict(SOCIAL_LINKS=SOCIAL_LINKS)
+
+
 CITY_TO_IATA = {
     'NAIROBI': 'NBO',
     'KENYA': 'NBO',
