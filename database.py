@@ -48,7 +48,7 @@ class AffiliateLink(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     link_type = db.Column(db.String(20), nullable=False)
-    placement = db.Column(db.Text)  # comma-separated list of placements
+    placement = db.Column(db.String(50))
     content = db.Column(db.Text, nullable=False)
     description = db.Column(db.String(300))
     active = db.Column(db.Boolean, default=True)
@@ -86,12 +86,13 @@ class ChatMessage(db.Model):
 class CategoryImage(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     slug = db.Column(db.String(50), unique=True, nullable=False)
-    image_url = db.Column(db.Text)  # CHANGED: db.Text handles large base64 Data URIs
+    image_url = db.Column(db.String(500))
 
 
-class DealBanner(db.Model):
+class WhatsAppTracker(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    message = db.Column(db.String(300), nullable=False)
-    link_url = db.Column(db.String(500))
-    active = db.Column(db.Boolean, default=True)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    phone_number = db.Column(db.String(50), nullable=False)
+    origin = db.Column(db.String(10), nullable=False)
+    destination = db.Column(db.String(10), nullable=False)
+    target_price = db.Column(db.Float, default=0.0)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)

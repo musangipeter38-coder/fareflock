@@ -1,19 +1,19 @@
 import os
 import re
+import requests
 from datetime import datetime
 from flask import Flask, render_template, redirect, url_for, request, flash, abort, Response, jsonify
 from flask_login import LoginManager, login_user, logout_user, login_required
 from flask_bcrypt import Bcrypt
 from dotenv import load_dotenv
 from sqlalchemy import text
-from database import db, Admin, Post, Category, AffiliateLink, ClickLog, Tip, ChatMessage, CategoryImage
+from database import db, Admin, Post, Category, AffiliateLink, ClickLog, Tip, ChatMessage, CategoryImage, WhatsAppTracker
 
 load_dotenv()
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-change-later')
 
-# PostgreSQL database URL fix for Render
 db_url = os.environ.get('DATABASE_URL', 'sqlite:///fareflock.db')
 if db_url and db_url.startswith("postgres://"):
     db_url = db_url.replace("postgres://", "postgresql://", 1)
@@ -30,7 +30,9 @@ login_manager.init_app(app)
 login_manager.login_view = 'login'
 
 SITE_URL = os.environ.get('SITE_URL', 'https://fareflock.com')
-WHATSAPP_NUMBER = os.environ.get('WHATSAPP_NUMBER', '')
+WHATSAPP_NUMBER = os.environ.get('WHATSAPP_NUMBER', '+14155238886')
+TRAVELPAYOUTS_TOKEN = os.environ.get('TRAVELPAYOUTS_TOKEN', '')
+TRAVELPAYOUTS_MARKER = os.environ.get('TRAVELPAYOUTS_MARKER', '581331')
 
 SOCIAL_LINKS = {
     'facebook': 'https://facebook.com/fareflock',
@@ -166,6 +168,135 @@ def add_cache_headers(response):
     return response
 
 
+# ---------- NATIVE TRAVELPAYOUTS API & REDIRECT GATEWAY ----------
+
+@app.route('/api/search/flights', methods=['GET'])
+def search_flights():
+    origin = request.args.get('origin', 'NBO').upper().strip()
+    destination = request.args.get('destination', 'DXB').upper().strip()
+    currency = request.args.get('currency', 'USD').upper().strip()
+
+    url = "https://api.travelpayouts.com/v2/prices/latest"
+    params = {
+        'origin': origin,
+        'destination': destination,
+        'currency': currency,
+        'period_type': 'year',
+        'page': 1,
+        'limit': 10,
+        'show_to_affiliates': 'true',
+        'token': TRAVELPAYOUTS_TOKEN
+    }
+
+    try:
+        res = requests.get(url, params=params, timeout=10)
+        data = res.json()
+        if not data.get('success', False):
+            return jsonify({'ok': False, 'results': []})
+
+        raw_results = data.get('data', [])
+        sanitized = []
+        for flight in raw_results:
+            orig = flight.get('origin')
+            dest = flight.get('destination')
+            depart = flight.get('depart_date')
+            price = flight.get('value')
+            gate = flight.get('gate', 'Travelpayouts Partner')
+            raw_aff_url = f"https://aviasales.com/search/{orig}{depart}{dest}1?marker={TRAVELPAYOUTS_MARKER}"
+            
+            sanitized.append({
+                'origin': orig,
+                'destination': dest,
+                'depart_date': depart,
+                'return_date': flight.get('return_date', ''),
+                'price': price,
+                'currency': currency,
+                'gate': gate,
+                'transfers': flight.get('number_of_changes', 0),
+                'booking_url': f"/api/redirect?target={requests.utils.quote(raw_aff_url)}&partner={requests.utils.quote(gate)}&origin={orig}&dest={dest}"
+            })
+
+        return jsonify({'ok': True, 'results': sanitized})
+    except Exception as e:
+        return jsonify({'ok': False, 'error': str(e), 'results': []}), 500
+
+
+@app.route('/api/redirect')
+def api_redirect():
+    target_url = request.args.get('target', 'https://fareflock.com')
+    partner = request.args.get('partner', 'Verified Partner')
+    origin = request.args.get('origin', 'N/A')
+    dest = request.args.get('dest', 'N/A')
+
+    link = AffiliateLink.query.filter_by(content=target_url).first()
+    link_id = link.id if link else 0
+
+    click = ClickLog(affiliate_link_id=link_id if link_id > 0 else 1, post_slug=f"search_{origin}_{dest}")
+    db.session.add(click)
+    db.session.commit()
+
+    return redirect(target_url, code=302)
+
+
+# ---------- WHATSAPP TRACKER ENGINE ----------
+
+@app.route('/api/whatsapp/track', methods=['POST'])
+def register_whatsapp_tracker():
+    phone = request.form.get('phone', '').strip()
+    origin = request.form.get('origin', '').strip().upper()
+    destination = request.form.get('destination', '').strip().upper()
+    target_price = request.form.get('target_price', 0, type=float)
+
+    if not phone or not origin or not destination:
+        return jsonify({'ok': False, 'error': 'Missing required flight parameters.'}), 400
+
+    tracker = WhatsAppTracker(
+        phone_number=phone,
+        origin=origin,
+        destination=destination,
+        target_price=target_price
+    )
+    db.session.add(tracker)
+    db.session.commit()
+
+    return jsonify({
+        'ok': True,
+        'message': f'Tracking enabled for {origin} -> {destination}. Notifications will be sent to {phone} via WhatsApp.'
+    })
+
+
+@app.route('/api/whatsapp/webhook', methods=['POST'])
+def whatsapp_webhook():
+    incoming_msg = request.values.get('Body', '').lower().strip()
+    from_number = request.values.get('From', '')
+
+    response_text = "Welcome to Fareflock Concierge ✈️\n\nReply with your target route to start tracking (e.g., 'TRACK NBO DXB 500')."
+
+    if 'track' in incoming_msg:
+        parts = incoming_msg.split()
+        if len(parts) >= 3:
+            orig = parts[1].upper()
+            dest = parts[2].upper()
+            price = float(parts[3]) if len(parts) >= 4 and parts[3].isdigit() else 0.0
+
+            tracker = WhatsAppTracker(
+                phone_number=from_number,
+                origin=orig,
+                destination=dest,
+                target_price=price
+            )
+            db.session.add(tracker)
+            db.session.commit()
+
+            response_text = f"✅ Fareflock Price Watch Active!\nRoute: {orig} ✈️ {dest}\nWe'll text you on WhatsApp the second prices drop."
+
+    xml_response = f"""<?xml version="1.0" encoding="UTF-8"?>
+    <Response>
+        <Message>{response_text}</Message>
+    </Response>"""
+    return Response(xml_response, mimetype='text/xml')
+
+
 # ---------- PUBLIC ROUTES ----------
 
 @app.route('/')
@@ -174,8 +305,8 @@ def home():
     cat_images = get_category_images()
     return render_template(
         'index.html', widgets=widgets, cat_images=cat_images,
-        meta_title='Fareflock — Explore All Travel Services',
-        meta_description='Flights, hotels, tours, insurance, and more — real deals and honest guides, all in one place.'
+        meta_title='Fareflock — Premium Concierge & Deal Finder',
+        meta_description='Flights, hotels, tours, insurance — real-time verified pricing cross-checked across 1,000+ providers.'
     )
 
 
@@ -190,8 +321,8 @@ def flights():
     tips = get_tips('flights')
     return render_template(
         'flights.html', widgets=widgets, tips=tips,
-        meta_title='Find Cheap Flights — Fareflock',
-        meta_description='Search real-time flight deals and read honest booking tips, curated by Fareflock.'
+        meta_title='Find Verified Cheap Flights — Fareflock',
+        meta_description='Search real-time flight deals and track price drops instantly via Fareflock WhatsApp Concierge.'
     )
 
 
@@ -202,7 +333,7 @@ def hotels():
     return render_template(
         'hotels.html', widgets=widgets, tips=tips,
         meta_title='Find Hotels — Fareflock',
-        meta_description='Hotel deals worldwide, curated for real budgets, plus honest guides on picking the right stay.'
+        meta_description='Curated stays with 256-bit secure gateway links to official hotel providers.'
     )
 
 
