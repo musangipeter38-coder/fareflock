@@ -34,11 +34,37 @@ WHATSAPP_NUMBER = os.environ.get('WHATSAPP_NUMBER', '+14155238886')
 TRAVELPAYOUTS_TOKEN = os.environ.get('TRAVELPAYOUTS_TOKEN', '')
 TRAVELPAYOUTS_MARKER = os.environ.get('TRAVELPAYOUTS_MARKER', '581331')
 
-SOCIAL_LINKS = {
-    'facebook': 'https://facebook.com/fareflock',
-    'instagram': 'https://instagram.com/fareflock_01',
-    'youtube': 'https://youtube.com/@fareflock',
-    'tiktok': 'https://tiktok.com/@fareflock.com',
+CITY_TO_IATA = {
+    'NAIROBI': 'NBO',
+    'KENYA': 'NBO',
+    'MOMBASA': 'MBA',
+    'KISUMU': 'KIS',
+    'DUBAI': 'DXB',
+    'UAE': 'DXB',
+    'UNITED KINGDOM': 'LHR',
+    'UK': 'LHR',
+    'LONDON': 'LHR',
+    'LONDON HEATHROW': 'LHR',
+    'LONDON GATWICK': 'LGW',
+    'NEW YORK': 'JFK',
+    'USA': 'JFK',
+    'AMSTERDAM': 'AMS',
+    'NETHERLANDS': 'AMS',
+    'PARIS': 'CDG',
+    'FRANCE': 'CDG',
+    'DOHA': 'DOH',
+    'QATAR': 'DOH',
+    'JOHANNESBURG': 'JNB',
+    'SOUTH AFRICA': 'JNB',
+    'TORONTO': 'YYZ',
+    'CANADA': 'YYZ',
+    'MUMBAI': 'BOM',
+    'INDIA': 'BOM',
+    'DELHI': 'DEL',
+    'BANGKOK': 'BKK',
+    'THAILAND': 'BKK',
+    'GUANGZHOU': 'CAN',
+    'CHINA': 'CAN',
 }
 
 SERVICE_CATEGORIES = [
@@ -58,6 +84,13 @@ BLOG_VISUALS = [
     {'match': 'review', 'icon': '⭐', 'gradient': 'grad-pink'},
     {'match': 'visa', 'icon': '🛂', 'gradient': 'grad-teal'},
 ]
+
+
+def resolve_iata(input_str):
+    cleaned = input_str.strip().upper()
+    if len(cleaned) == 3 and cleaned.isalpha():
+        return cleaned
+    return CITY_TO_IATA.get(cleaned, cleaned)
 
 
 def get_category(slug):
@@ -102,7 +135,6 @@ def reading_time(body):
 
 
 app.jinja_env.globals['SERVICE_CATEGORIES'] = SERVICE_CATEGORIES
-app.jinja_env.globals['SOCIAL_LINKS'] = SOCIAL_LINKS
 app.jinja_env.globals['category_url'] = category_url
 app.jinja_env.globals['asset_version'] = asset_version
 app.jinja_env.globals['WHATSAPP_NUMBER'] = WHATSAPP_NUMBER
@@ -172,9 +204,12 @@ def add_cache_headers(response):
 
 @app.route('/api/search/flights', methods=['GET'])
 def search_flights():
-    origin = request.args.get('origin', 'NBO').upper().strip()
-    destination = request.args.get('destination', 'DXB').upper().strip()
+    raw_origin = request.args.get('origin', 'NBO')
+    raw_destination = request.args.get('destination', 'DXB')
     currency = request.args.get('currency', 'USD').upper().strip()
+
+    origin = resolve_iata(raw_origin)
+    destination = resolve_iata(raw_destination)
 
     url = "https://api.travelpayouts.com/v2/prices/latest"
     params = {
@@ -191,10 +226,23 @@ def search_flights():
     try:
         res = requests.get(url, params=params, timeout=10)
         data = res.json()
-        if not data.get('success', False):
-            return jsonify({'ok': False, 'results': []})
+        
+        raw_results = data.get('data', []) if data.get('success', False) else []
+        
+        if not raw_results:
+            fallback_params = {
+                'origin': origin,
+                'currency': currency,
+                'period_type': 'year',
+                'page': 1,
+                'limit': 10,
+                'show_to_affiliates': 'true',
+                'token': TRAVELPAYOUTS_TOKEN
+            }
+            res = requests.get(url, params=fallback_params, timeout=10)
+            data = res.json()
+            raw_results = data.get('data', []) if data.get('success', False) else []
 
-        raw_results = data.get('data', [])
         sanitized = []
         for flight in raw_results:
             orig = flight.get('origin')
@@ -216,7 +264,7 @@ def search_flights():
                 'booking_url': f"/api/redirect?target={requests.utils.quote(raw_aff_url)}&partner={requests.utils.quote(gate)}&origin={orig}&dest={dest}"
             })
 
-        return jsonify({'ok': True, 'results': sanitized})
+        return jsonify({'ok': True, 'resolved_origin': origin, 'resolved_destination': destination, 'results': sanitized})
     except Exception as e:
         return jsonify({'ok': False, 'error': str(e), 'results': []}), 500
 
@@ -308,11 +356,6 @@ def home():
         meta_title='Fareflock — Premium Concierge & Deal Finder',
         meta_description='Flights, hotels, tours, insurance — real-time verified pricing cross-checked across 1,000+ providers.'
     )
-
-
-@app.route('/explore')
-def explore():
-    return redirect(url_for('home'), code=301)
 
 
 @app.route('/flights')
@@ -716,11 +759,6 @@ def admin_category_images():
 # ---------- DATABASE SETUP ----------
 with app.app_context():
     db.create_all()
-    try:
-        db.session.execute(text('ALTER TABLE affiliate_link ADD COLUMN IF NOT EXISTS height INTEGER DEFAULT 500'))
-        db.session.commit()
-    except Exception:
-        db.session.rollback()
 
 if __name__ == '__main__':
     app.run(debug=True)
