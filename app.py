@@ -669,3 +669,50 @@ with app.app_context():
 
 if __name__ == '__main__':
     app.run(debug=True)
+    from services.travelpayouts import fetch_cheap_flights
+
+@app.route('/api/search-flights', methods=['POST'])
+def search_flights():
+    data = request.get_json() or {}
+    
+    origin = data.get('origin', '').strip()
+    destination = data.get('destination', '').strip()
+    depart_date = data.get('depart_date', '').strip()
+    return_date = data.get('return_date', '').strip()
+    
+    if not origin or not destination or not depart_date:
+        return jsonify({"success": False, "message": "Missing required fields"}), 400
+        
+    results = fetch_cheap_flights(origin, destination, depart_date, return_date)
+    return jsonify(results)
+
+
+@app.route('/redirect')
+def redirect_bridge():
+    partner = request.args.get('partner', 'Verified Partner')
+    origin = request.args.get('origin', 'NYC')
+    destination = request.args.get('destination', 'PAR')
+    price = request.args.get('price', '0')
+    
+    marker = os.environ.get("TRAVELPAYOUTS_MARKER", "775557")
+    
+    final_affiliate_url = f"https://wayaway.io/search/{origin}{destination}?marker={marker}&cls=Y"
+    
+    return render_template(
+        'redirect.html', 
+        partner=partner, 
+        origin=origin, 
+        destination=destination, 
+        price=price, 
+        target_url=final_affiliate_url
+    )
+
+
+@app.route('/api/redirect')
+def api_redirect():
+    partner = request.args.get('partner', 'Partner')
+    origin = request.args.get('origin', '')
+    destination = request.args.get('destination', '')
+    price = request.args.get('price', '0')
+    
+    return redirect(f"/redirect?partner={partner}&origin={origin}&destination={destination}&price={price}")

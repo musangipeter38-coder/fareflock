@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Securing Fare | Fareflock Verified Gateway</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script>
+    setTimeout(function() {
+      window.location.href = "{{ target_url }}";
+    }, 1500);
+  </script>
+</head>
+<body class="bg-gray-900 text-white min-h-screen flex items-center justify-center p-4">
+
+  <div class="max-w-md w-full bg-gray-800 border border-gray-700 rounded-2xl p-8 shadow-2xl text-center space-y-6">
+    
+    <div class="relative flex justify-center items-center">
+      <div class="absolute animate-ping w-16 h-16 rounded-full bg-emerald-500 opacity-20"></div>
+      <div class="w-16 h-16 rounded-full bg-emerald-600 flex items-center justify-center shadow-lg text-white font-bold text-2xl z-10">
+        🛡️
+      </div>
+    </div>
+
+    <div>
+      <h2 class="text-xl font-bold text-white">Securing Your Deal</h2>
+      <p class="text-sm text-gray-400 mt-1">Connecting to <span class="text-emerald-400 font-semibold">{{ partner }}</span> via Fareflock Network...</p>
+    </div>
+
+    <div class="w-full bg-gray-700 rounded-full h-2 overflow-hidden">
+      <div class="bg-emerald-500 h-2 rounded-full animate-pulse transition-all duration-1000 w-full"></div>
+    </div>
+
+    <div class="bg-gray-900/60 rounded-xl p-4 text-xs text-gray-400 space-y-2 border border-gray-700/50 text-left">
+      <div class="flex items-center space-x-2">
+        <span class="text-emerald-400">✓</span>
+        <span>Verifying rate freshness with Travelpayouts Network</span>
+      </div>
+      <div class="flex items-center space-x-2">
+        <span class="text-emerald-400">✓</span>
+        <span>Applying zero-markup consumer guarantee</span>
+      </div>
+      <div class="flex items-center space-x-2">
+        <span class="text-emerald-400">✓</span>
+        <span>Encrypting handoff connection</span>
+      </div>
+    </div>
+
+    <p class="text-xs text-gray-500">If you are not redirected automatically in 3 seconds, <a href="{{ target_url }}" class="text-emerald-400 underline">click here</a>.</p>
+
+  </div>
+
+</body>
+</html>
