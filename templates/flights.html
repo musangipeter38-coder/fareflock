@@ -1,154 +1,27 @@
-{% extends "base.html" %}
-{% block title %}Find Verified Flights — Fareflock Concierge{% endblock %}
+{% extends 'base.html' %}
 {% block content %}
-<section class="page-hero" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: #ffffff; padding: 60px 20px; text-align: center;">
-    <span style="background: rgba(14, 165, 233, 0.15); color: #38bdf8; padding: 6px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; display: inline-block; margin-bottom: 15px;">
-        🛡️ Fareflock Verified Concierge · 1,000+ Airline & Hotel Partners Cross-Checked
-    </span>
-    <h1 style="font-size: 2.5rem; font-weight: 800; margin-bottom: 10px;">Native Flight Search</h1>
-    <p style="color: #94a3b8; max-width: 600px; margin: 0 auto 30px auto;">Direct prices straight from global flight inventory. No hidden platform markup.</p>
+<div class="hero-section">
+  <h1 class="hero-title">Precision Flight Search.<br>Direct Partner Booking.</h1>
+  <p style="color: #94a3b8; font-size: 1.15rem; margin-bottom: 2.5rem;">Search real-time flight inventory across verified networks without markup fees.</p>
 
-    <!-- Custom Search Form Component with HTML5 Datalist for Auto-Suggestions -->
-    <div style="max-width: 900px; margin: 0 auto; background: #1e293b; padding: 25px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); border: 1px solid #334155;">
-        <form id="flightSearchForm" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px;">
-            <input type="text" id="origin" name="origin" list="airportList" placeholder="Origin (e.g. Nairobi or NBO)" value="NBO" required style="padding: 12px; border-radius: 8px; border: 1px solid #475569; background: #0f172a; color: #fff; font-weight: bold;">
-            <input type="text" id="destination" name="destination" list="airportList" placeholder="Destination (e.g. London or LHR)" value="DXB" required style="padding: 12px; border-radius: 8px; border: 1px solid #475569; background: #0f172a; color: #fff; font-weight: bold;">
-            <input type="text" id="currency" name="currency" value="USD" required style="padding: 12px; border-radius: 8px; border: 1px solid #475569; background: #0f172a; color: #fff; font-weight: bold;">
-            <button type="submit" style="padding: 12px 24px; border-radius: 8px; border: none; background: #0ea5e9; color: #fff; font-weight: 700; cursor: pointer;">Search Live Inventory</button>
-        </form>
-
-        <datalist id="airportList">
-            <option value="NBO">Nairobi (Jomo Kenyatta Int'l)</option>
-            <option value="MBA">Mombasa (Moi Int'l)</option>
-            <option value="KIS">Kisumu</option>
-            <option value="DXB">Dubai International</option>
-            <option value="LHR">London Heathrow</option>
-            <option value="JFK">New York (JFK)</option>
-            <option value="AMS">Amsterdam Schiphol</option>
-            <option value="CDG">Paris Charles de Gaulle</option>
-            <option value="DOH">Doha (Hamad Int'l)</option>
-            <option value="JNB">Johannesburg (O.R. Tambo)</option>
-        </datalist>
+  <form id="flight-search-form" class="search-card">
+    <div class="form-group">
+      <label>Origin</label>
+      <input type="text" id="origin" class="form-control" value="NBO" required>
     </div>
-</section>
-
-<!-- Native Search Results Container -->
-<section style="max-width: 1000px; margin: 40px auto; padding: 0 20px;">
-    <div id="resultsContainer" style="display: grid; gap: 20px;">
-        <p style="text-align: center; color: #64748b;">Submit a search above to pull direct real-time flight rates.</p>
+    <div class="form-group">
+      <label>Destination</label>
+      <input type="text" id="destination" class="form-control" value="DXB" required>
     </div>
-</section>
-
-<!-- WhatsApp Concierge Callout -->
-<section style="max-width: 1000px; margin: 60px auto; padding: 30px; background: #022c22; border-radius: 16px; border: 1px solid #059669; color: #ecfdf5; text-align: center;">
-    <h2>📲 Track This Route via Fareflock WhatsApp Concierge</h2>
-    <p style="color: #a7f3d0; margin-bottom: 20px;">Get alerted on WhatsApp instantly when rates on your route drop.</p>
-    <form id="whatsappForm" style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
-        <input type="text" id="waPhone" placeholder="Your WhatsApp (+254...)" required style="padding: 12px; border-radius: 8px; border: 1px solid #047857; background: #064e3b; color: #fff;">
-        <input type="text" id="waOrigin" placeholder="Origin (NBO)" value="NBO" required style="padding: 12px; border-radius: 8px; border: 1px solid #047857; background: #064e3b; color: #fff; width: 100px;">
-        <input type="text" id="waDest" placeholder="Dest (DXB)" value="DXB" required style="padding: 12px; border-radius: 8px; border: 1px solid #047857; background: #064e3b; color: #fff; width: 100px;">
-        <button type="submit" style="padding: 12px 24px; border-radius: 8px; border: none; background: #10b981; color: #064e3b; font-weight: 800; cursor: pointer;">Enable Price Alert</button>
-    </form>
-    <div id="waStatus" style="margin-top: 15px; font-weight: bold; color: #34d399;"></div>
-</section>
-
-<!-- Bridge Modal -->
-<div id="bridgeModal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.95); z-index: 9999; justify-content: center; align-items: center;">
-    <div style="background: #1e293b; padding: 40px; border-radius: 20px; text-align: center; max-width: 450px; border: 1px solid #38bdf8; box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
-        <div style="font-size: 3rem; margin-bottom: 15px;">🔒</div>
-        <h3 style="color: #ffffff; margin-bottom: 10px;">Securing Booking Gateway</h3>
-        <p id="bridgeText" style="color: #94a3b8; font-size: 0.95rem; margin-bottom: 20px;">Connecting to official partner inventory via Fareflock Link Protection...</p>
-        <div style="width: 100%; height: 6px; background: #334155; border-radius: 3px; overflow: hidden;">
-            <div style="width: 100%; height: 100%; background: #0ea5e9; animation: loadingBar 1.5s infinite linear;"></div>
-        </div>
+    <div class="form-group" style="display: flex; align-items: flex-end;">
+      <button type="submit" class="btn-primary" style="width: 100%;">Search Live Fares</button>
     </div>
+  </form>
+
+  <div class="trust-badge">
+    🔒 Real-time pricing verified via Travelpayouts Network. Zero hidden surcharges.
+  </div>
 </div>
 
-<style>
-@keyframes loadingBar {
-    0% { transform: translateX(-100%); }
-    100% { transform: translateX(100%); }
-}
-</style>
-
-<script>
-document.getElementById('flightSearchForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    const container = document.getElementById('resultsContainer');
-    container.innerHTML = '<p style="text-align: center; color: #38bdf8;">Searching live partner databases...</p>';
-
-    const origin = document.getElementById('origin').value;
-    const dest = document.getElementById('destination').value;
-    const curr = document.getElementById('currency').value;
-
-    try {
-        const res = await fetch(`/api/search/flights?origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(dest)}&currency=${encodeURIComponent(curr)}`);
-        const data = await res.json();
-
-        if(!data.ok || !data.results || data.results.length === 0) {
-            container.innerHTML = `
-                <div style="text-align: center; color: #ef4444; background: #1e293b; padding: 20px; border-radius: 12px; border: 1px solid #7f1d1d;">
-                    <p style="font-weight: bold; margin-bottom: 5px;">No specific deal cache found for ${data.resolved_origin || origin} to ${data.resolved_destination || dest}.</p>
-                    <p style="color: #94a3b8; font-size: 0.9rem;">Try searching using airport codes like <strong>NBO</strong> (Nairobi), <strong>LHR</strong> (London Heathrow), or <strong>DXB</strong> (Dubai).</p>
-                </div>
-            `;
-            return;
-        }
-
-        container.innerHTML = '';
-        data.results.forEach(flight => {
-            const card = document.createElement('div');
-            card.style.cssText = "background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;";
-            card.innerHTML = `
-                <div>
-                    <span style="font-size: 1.2rem; font-weight: 800; color: #fff;">${flight.origin} ✈️ ${flight.destination}</span>
-                    <div style="color: #94a3b8; font-size: 0.85rem; margin-top: 4px;">Depart: ${flight.depart_date} · Transfers: ${flight.transfers}</div>
-                    <div style="color: #38bdf8; font-size: 0.8rem; margin-top: 2px;">Provider: ${flight.gate}</div>
-                </div>
-                <div style="text-align: right;">
-                    <div style="font-size: 1.6rem; font-weight: 900; color: #10b981;">${flight.currency} $${flight.price}</div>
-                    <button onclick="triggerBridge('${flight.booking_url}', '${flight.gate}')" style="margin-top: 8px; padding: 10px 18px; border-radius: 8px; border: none; background: #0ea5e9; color: #fff; font-weight: 700; cursor: pointer;">
-                        Secure Booking Gateway →
-                    </button>
-                </div>
-            `;
-            container.appendChild(card);
-        });
-    } catch(err) {
-        container.innerHTML = '<p style="text-align: center; color: #ef4444;">Unable to fetch live prices right now.</p>';
-    }
-});
-
-function triggerBridge(targetUrl, partnerName) {
-    const modal = document.getElementById('bridgeModal');
-    const text = document.getElementById('bridgeText');
-    text.innerText = `Securing your seat with ${partnerName} via Fareflock Link Protection...`;
-    modal.style.display = 'flex';
-
-    setTimeout(() => {
-        window.location.href = targetUrl;
-    }, 1500);
-}
-
-document.getElementById('whatsappForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    const phone = document.getElementById('waPhone').value;
-    const origin = document.getElementById('waOrigin').value;
-    const destination = document.getElementById('waDest').value;
-    const status = document.getElementById('waStatus');
-
-    const formData = new FormData();
-    formData.append('phone', phone);
-    formData.append('origin', origin);
-    formData.append('destination', destination);
-
-    const res = await fetch('/api/whatsapp/track', { method: 'POST', body: formData });
-    const data = await res.json();
-    if(data.ok) {
-        status.innerText = data.message;
-    } else {
-        status.innerText = 'Failed to enable tracking.';
-    }
-});
-</script>
+<div id="flight-results" class="results-container"></div>
 {% endblock %}

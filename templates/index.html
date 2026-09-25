@@ -1,55 +1,8 @@
-{% extends "base.html" %}
-{% block title %}Fareflock — Explore All Travel Services{% endblock %}
+{% extends 'base.html' %}
 {% block content %}
-
-{% if deal and deal.active %}
-<a href="{{ deal.link_url or '#' }}" class="deal-banner">
-    <span class="deal-badge">Deal of the Day</span>
-    <span class="deal-message">{{ deal.message }}</span>
-</a>
-{% endif %}
-
-{% if widgets %}
-    {% for widget in widgets %}
-    <section class="widget-section">
-        <div class="widget-card">
-            <iframe class="widget-frame" style="height:{{ widget.height }}px;" scrolling="no" srcdoc="{{ widget.content | widget_srcdoc }}" sandbox="allow-scripts allow-popups allow-forms allow-same-origin allow-top-navigation" loading="lazy"></iframe>
-        </div>
-    </section>
-    {% endfor %}
-{% endif %}
-
-<section class="page-hero globe-hero">
-    <div class="floating-planes" aria-hidden="true">
-        <span class="floating-plane fp-1">✈️</span>
-        <span class="floating-plane fp-2">✈️</span>
-        <span class="floating-plane fp-3">✈️</span>
-        <span class="floating-plane fp-4">✈️</span>
-    </div>
-
-    <div class="globe-decor" aria-hidden="true">
-        <div class="globe-core">🌍</div>
-        <div class="plane-orbit orbit-1"><span class="plane">✈️</span></div>
-        <div class="plane-orbit orbit-2"><span class="plane">✈️</span></div>
-        <div class="plane-orbit orbit-3"><span class="plane">✈️</span></div>
-    </div>
-    <h1>Explore All Services</h1>
-    <p>Real deals and honest guides — flights, hotels, tours, and more, all in one place.</p>
-</section>
-
-<section class="tips-grid-section">
-    <div class="category-grid-fixed">
-        {% for cat in SERVICE_CATEGORIES %}
-        {% set bg = cat_images.get(cat.slug) %}
-        <div class="category-slide" style="{% if bg %}background-image:url('{{ bg }}');{% endif %}">
-            <a href="{{ category_url(cat) }}" class="category-slide-link" aria-label="{{ cat.name }}"></a>
-            <div class="category-slide-overlay">
-                <span class="category-icon">{{ cat.icon }}</span>
-                <span class="category-name glow-text">{{ cat.name }}</span>
-            </div>
-            <a href="{{ category_url(cat) }}" class="category-book-btn">Book Now</a>
-        </div>
-        {% endfor %}
-    </div>
-</section>
+<div class="hero-section">
+  <h1 class="hero-title">Travel Discovery, Reinvented.</h1>
+  <p style="color: #94a3b8; font-size: 1.15rem; margin-bottom: 2.5rem;">Cross-compare live fare pricing across 1,000+ verified travel networks with zero added markups.</p>
+  <a href="/flights" class="btn-primary" style="text-decoration: none; padding: 1rem 2rem; font-size: 1.1rem;">Launch Flight Engine ➔</a>
+</div>
 {% endblock %}
