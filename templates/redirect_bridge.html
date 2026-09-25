@@ -1,88 +1,29 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Securing your booking — Fareflock</title>
-    <meta name="robots" content="noindex">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v={{ asset_version('css/style.css') }}">
-    <style>
-        .bridge-wrap {
-            min-height: 70vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 40px 20px;
-            text-align: center;
-        }
-        .bridge-card {
-            max-width: 420px;
-            width: 100%;
-        }
-        .bridge-spinner {
-            width: 56px;
-            height: 56px;
-            margin: 0 auto 24px;
-            border-radius: 50%;
-            border: 4px solid var(--border-glow);
-            border-top-color: var(--coral, #D6452C);
-            animation: bridge-spin 0.9s linear infinite;
-        }
-        @keyframes bridge-spin { to { transform: rotate(360deg); } }
-        .bridge-title {
-            font-family: var(--font-display, serif);
-            font-size: 22px;
-            font-weight: 600;
-            color: var(--paper, #F1EDE3);
-            margin-bottom: 10px;
-        }
-        .bridge-sub {
-            color: var(--text-muted);
-            font-size: 14px;
-            margin-bottom: 24px;
-            line-height: 1.6;
-        }
-        .bridge-badges {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin-bottom: 20px;
-        }
-        .bridge-badge {
-            font-family: var(--font-mono, monospace);
-            font-size: 11px;
-            color: var(--coral-light, #E8735A);
-            border: 1px dashed var(--border-glow);
-            padding: 4px 10px;
-            border-radius: 20px;
-        }
-        .bridge-manual {
-            font-size: 13px;
-            color: var(--text-muted);
-        }
-        .bridge-manual a { color: var(--coral-light, #E8735A); }
-    </style>
-</head>
-<body>
-    <div class="bridge-wrap">
-        <div class="bridge-card">
-            <div class="bridge-spinner" aria-hidden="true"></div>
-            <div class="bridge-title">Securing your seat with {{ link.name }}</div>
-            <p class="bridge-sub">via the Fareflock Verified Partner Network — you're being handed off safely, hang tight.</p>
-            <div class="bridge-badges">
-                <span class="bridge-badge">✓ Verified Partner</span>
-                <span class="bridge-badge">✓ Secure Link</span>
-                <span class="bridge-badge">✓ No Extra Fees</span>
-            </div>
-            <p class="bridge-manual">Not redirected in a moment? <a href="{{ link.content }}" id="manual-link">Continue manually</a></p>
+{% extends "base.html" %}
+{% block title %}Securing Your Booking — Fareflock{% endblock %}
+{% block content %}
+<section class="bridge-screen">
+    <div class="bridge-card">
+        <div class="bridge-spinner">
+            <span class="bridge-plane">✈️</span>
         </div>
-    </div>
+        <h1>Securing your seat with {{ link.name }}...</h1>
+        <p class="bridge-sub">Fareflock Secure Booking Gateway</p>
 
-    <script>
-        setTimeout(function() {
-            window.location.replace({{ link.content|tojson }});
-        }, 1600);
-    </script>
-</body>
-</html>
+        <div class="bridge-trust-row">
+            <span>🔒 Encrypted Handoff</span>
+            <span>✅ Verified Partner</span>
+            <span>💸 No Extra Cost to You</span>
+        </div>
+
+        <p class="bridge-note">You're being securely transferred to complete your booking directly with our verified travel partner.</p>
+
+        <a href="{{ link.content }}" id="bridge-continue" class="btn-primary">Continue now →</a>
+    </div>
+</section>
+
+<script>
+    setTimeout(function() {
+        window.location.href = "{{ link.content }}";
+    }, 1600);
+</script>
+{% endblock %}
