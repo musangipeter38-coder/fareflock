@@ -341,7 +341,10 @@ def out(link_id):
     db.session.add(click)
     db.session.commit()
 
-    return redirect(link.content)
+    # Instead of an instant, jarring redirect, show a short branded bridge
+    # page first — reassures the visitor the transition is intentional and
+    # secure, rather than looking like they got bounced off-site randomly.
+    return render_template('redirect_bridge.html', link=link)
 
 
 # ---------- ADMIN AUTH ----------
